@@ -27,6 +27,7 @@ const createWindow = () => {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false, // Required to expose native File.path for media conversion
+      plugins: true, // Enable native Chromium PDF Viewer
     },
   });
 
@@ -61,6 +62,16 @@ ipcMain.handle('dialog:openFile', async (event, options) => {
   });
   if (canceled) return null;
   return filePaths[0];
+});
+
+ipcMain.handle('dialog:openMultipleFiles', async (event, options) => {
+  if (!mainWindow) return [];
+  const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openFile', 'multiSelections'],
+    ...options
+  });
+  if (canceled) return [];
+  return filePaths;
 });
 
 ipcMain.handle('dialog:openDirectory', async () => {

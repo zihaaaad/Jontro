@@ -4,6 +4,7 @@ import { contextBridge, ipcRenderer } from 'electron';
 contextBridge.exposeInMainWorld('electronAPI', {
   // Dialogs
   openFile: (options?: any) => ipcRenderer.invoke('dialog:openFile', options),
+  openMultipleFiles: (options?: any) => ipcRenderer.invoke('dialog:openMultipleFiles', options),
   openDirectory: () => ipcRenderer.invoke('dialog:openDirectory'),
   saveBuffer: (buffer: ArrayBuffer, defaultName: string) => ipcRenderer.invoke('system:saveBuffer', new Uint8Array(buffer), defaultName),
   

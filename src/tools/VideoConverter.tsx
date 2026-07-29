@@ -3,18 +3,30 @@ import { UploadCloud, X, FileAudio } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function VideoConverter() {
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<{name: string, path: string}[]>([]);
   const [isConverting, setIsConverting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
   const [status, setStatus] = useState<'idle' | 'converting' | 'success' | 'error'>('idle');
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setSelectedFiles(prev => [...prev, ...Array.from(e.target.files as FileList)]);
-      setStatus('idle');
-      setProgress(0);
-      setCurrentFileIndex(0);
+  const handleNativeFileSelect = async () => {
+    if (window.electronAPI && window.electronAPI.openMultipleFiles) {
+      const paths = await window.electronAPI.openMultipleFiles({
+        filters: [{ name: 'Videos', extensions: ['mp4', 'mkv', 'avi', 'mov', 'wmv', 'flv', 'webm'] }]
+      });
+      if (paths && paths.length > 0) {
+        const newFiles = paths.map((p: string) => {
+          // Extract filename from path
+          const name = p.split('\\').pop()?.split('/').pop() || 'Unknown File';
+          return { name, path: p };
+        });
+        setSelectedFiles(prev => [...prev, ...newFiles]);
+        setStatus('idle');
+        setProgress(0);
+        setCurrentFileIndex(0);
+      }
+    } else {
+      toast.error('Native file selection not available in browser mode.');
     }
   };
 
@@ -34,7 +46,7 @@ export default function VideoConverter() {
       setIsConverting(true);
       
       // Wire up progress listener
-      window.electronAPI.onExtractionProgress((percent) => {
+      window.electronAPI.onExtractionProgress((percent: number) => {
         setProgress(Math.min(percent, 100));
       });
       
@@ -43,7 +55,7 @@ export default function VideoConverter() {
       for (let i = 0; i < selectedFiles.length; i++) {
         setCurrentFileIndex(i);
         setProgress(0);
-        const file = selectedFiles[i] as any;
+        const file = selectedFiles[i];
         const inputPath = file.path;
         
         // Generate a new .mp3 filename based on original video name
@@ -52,13 +64,13 @@ export default function VideoConverter() {
         
         try {
           const result = await window.electronAPI.extractAudioBulk(inputPath, outFolder, outFileName);
-          if (result.success) {
+          if (result && result.success) {
             successCount++;
           } else {
-            toast.error(`Failed on ${file.name}: ${result.error}`);
+            toast.error(`Failed on ${file.name}: ${result?.error || 'Unknown error'}`);
           }
-        } catch (e) {
-          toast.error(`Native execution failed for ${file.name}`);
+        } catch (e: any) {
+          toast.error(`Native execution failed for ${file.name}: ${e.message || 'Check FFmpeg'}`);
         }
       }
       
@@ -88,8 +100,9 @@ export default function VideoConverter() {
 
       <div className="bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] rounded-md p-8">
         <div className="mb-6">
-          <label 
-            className="border border-dashed rounded-md flex flex-col items-center justify-center py-12 px-6 cursor-pointer transition-none border-zinc-300 hover:border-zinc-400 bg-zinc-50 dark:border-[#404040] dark:hover:border-[#737373] dark:bg-[#0e0e0e]"
+          <button 
+            onClick={handleNativeFileSelect}
+            className="w-full border border-dashed rounded-md flex flex-col items-center justify-center py-12 px-6 cursor-pointer transition-none border-zinc-300 hover:border-zinc-400 bg-zinc-50 dark:border-[#404040] dark:hover:border-[#737373] dark:bg-[#0e0e0e]"
           >
             <UploadCloud size={32} strokeWidth={1.5} className="text-zinc-500 dark:text-[#737373] mb-4" />
             <span className="text-sm font-medium text-zinc-900 dark:text-[#ededed] mb-1">
@@ -98,8 +111,7 @@ export default function VideoConverter() {
             <span className="text-xs text-zinc-500 dark:text-[#737373]">
               Supports .mp4, .mkv, .avi, etc. Processed 100% locally.
             </span>
-            <input type="file" accept="video/*" multiple className="hidden" onChange={handleFileSelect} />
-          </label>
+          </button>
         </div>
 
         {/* Selected Files List */}
@@ -114,9 +126,6 @@ export default function VideoConverter() {
                   <div className="flex items-center truncate">
                     <FileAudio size={16} className="text-blue-500 mr-3 shrink-0" />
                     <span className="text-sm text-zinc-900 dark:text-[#ededed] truncate">{file.name}</span>
-                    <span className="text-xs text-zinc-500 dark:text-[#737373] ml-3 shrink-0">
-                      {(file.size / (1024 * 1024)).toFixed(2)} MB
-                    </span>
                   </div>
                   {!isConverting && (
                     <button 

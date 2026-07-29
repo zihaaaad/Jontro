@@ -247,17 +247,34 @@ export default function PdfTools() {
       {/* SPLIT UI */}
       {activeTool === 'split' && (
         <div className="bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] rounded-md overflow-hidden flex flex-col md:flex-row min-h-[400px]">
-          <div className="flex-1 p-8 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-[#262626] flex flex-col">
-            <label className="flex-1 border border-dashed border-zinc-300 dark:border-[#404040] hover:border-zinc-400 dark:hover:border-[#737373] bg-zinc-50 dark:bg-[#0e0e0e] rounded-md flex flex-col items-center justify-center p-6 cursor-pointer transition-none">
-              <FileText size={32} strokeWidth={1.5} className={splitFile ? 'text-red-500 mb-4' : 'text-zinc-500 dark:text-[#737373] mb-4'} />
-              <span className="text-sm font-medium text-zinc-900 dark:text-[#ededed] mb-1 text-center">
-                {splitFile ? splitFile.name : 'Select PDF to Split'}
-              </span>
-              <span className="text-xs text-zinc-500 dark:text-[#737373] text-center">
-                {splitFile ? 'Click to change file' : 'Only .pdf files supported'}
-              </span>
-              <input type="file" accept="application/pdf" className="hidden" onChange={handleSplitFile} />
-            </label>
+          <div className="flex-1 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-[#262626] flex flex-col relative overflow-hidden bg-zinc-100 dark:bg-[#090909]">
+            {splitFile ? (
+              <div className="relative w-full h-full flex-1 min-h-[350px]">
+                <embed 
+                  src={`${URL.createObjectURL(splitFile)}#toolbar=0&navpanes=0&scrollbar=0`} 
+                  type="application/pdf" 
+                  className="w-full h-full"
+                />
+                <button 
+                  onClick={() => setSplitFile(null)}
+                  className="absolute top-4 right-4 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg transition-colors"
+                  title="Remove PDF"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            ) : (
+              <label className="flex-1 m-8 border border-dashed border-zinc-300 dark:border-[#404040] hover:border-zinc-400 dark:hover:border-[#737373] bg-zinc-50 dark:bg-[#0e0e0e] rounded-md flex flex-col items-center justify-center p-6 cursor-pointer transition-none">
+                <FileText size={32} strokeWidth={1.5} className="text-zinc-500 dark:text-[#737373] mb-4" />
+                <span className="text-sm font-medium text-zinc-900 dark:text-[#ededed] mb-1 text-center">
+                  Select PDF to Split
+                </span>
+                <span className="text-xs text-zinc-500 dark:text-[#737373] text-center">
+                  Only .pdf files supported
+                </span>
+                <input type="file" accept="application/pdf" className="hidden" onChange={handleSplitFile} />
+              </label>
+            )}
           </div>
 
           <div className="w-full md:w-72 bg-white dark:bg-[#141414] p-6 flex flex-col">
