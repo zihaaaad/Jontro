@@ -6,7 +6,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openFile: (options?: any) => ipcRenderer.invoke('dialog:openFile', options),
   openMultipleFiles: (options?: any) => ipcRenderer.invoke('dialog:openMultipleFiles', options),
   openDirectory: () => ipcRenderer.invoke('dialog:openDirectory'),
-  saveBuffer: (buffer: ArrayBuffer, defaultName: string) => ipcRenderer.invoke('system:saveBuffer', new Uint8Array(buffer), defaultName),
+  saveBuffer: (buffer: ArrayBuffer, defaultName: string) => ipcRenderer.invoke('file:saveBuffer', buffer, defaultName),
+  saveFilesBulk: (files: {name: string, buffer: ArrayBuffer}[]) => ipcRenderer.invoke('file:saveFilesBulk', files),
   
   // App Info
   getAppVersion: () => ipcRenderer.invoke('system:getAppVersion'),

@@ -9,6 +9,7 @@ import PasswordGen from './tools/PasswordGen';
 import ImageResizer from './tools/ImageResizer';
 import PdfTools from './tools/PdfTools';
 import OcrTool from './tools/OcrTool';
+import QrStudio from './tools/QrStudio';
 import HomeDashboard from './tools/HomeDashboard';
 import { Toaster } from 'sonner';
 import pkg from '../package.json';
@@ -41,6 +42,7 @@ function App() {
     { id: 'image-resizer', name: 'Image Resizer', icon: ImageIcon },
     { id: 'pdf-tools', name: 'PDF Tools', icon: Files },
     { id: 'ocr-tool', name: 'Screenshot & OCR', icon: ScanText },
+    { id: 'qr-studio', name: 'QR Studio', icon: ImageIcon },
     { id: 'todo-list', name: 'To-Do List', icon: ListTodo },
     { id: 'password-gen', name: 'Password Gen', icon: KeyRound },
   ];
@@ -164,8 +166,9 @@ function App() {
             {activeTab === 'todo-list' && <TodoList />}
             {activeTab === 'password-gen' && <PasswordGen />}
             {activeTab === 'image-resizer' && <ImageResizer />}
-            {activeTab === 'pdf-tools' && <PdfTools />}
-            {activeTab === 'ocr-tool' && <OcrTool />}
+            { activeTab === 'pdf-tools' && <PdfTools /> }
+            { activeTab === 'ocr-tool' && <OcrTool /> }
+            { activeTab === 'qr-studio' && <QrStudio /> }
           </div>
         </div>
       </div>

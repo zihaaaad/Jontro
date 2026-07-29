@@ -85,21 +85,43 @@ ipcMain.handle('dialog:openDirectory', async () => {
 
 import fs from 'fs';
 
-ipcMain.handle('system:saveBuffer', async (event, buffer, defaultName) => {
-  if (!mainWindow) return { success: false, error: 'No window' };
-  
-  const { canceled, filePath } = await dialog.showSaveDialog(mainWindow, {
-    title: 'Save Image As',
-    defaultPath: defaultName
+ipcMain.handle('file:saveBuffer', async (_event, buffer: ArrayBuffer, defaultName: string) => {
+  const { canceled, filePath } = await dialog.showSaveDialog({
+    defaultPath: path.join(app.getPath('downloads'), defaultName),
+    title: 'Save File',
   });
 
-  if (canceled || !filePath) return { success: false, error: 'Canceled by user' };
+  if (canceled || !filePath) {
+    return { success: false, error: 'Canceled by user' };
+  }
 
   try {
     fs.writeFileSync(filePath, Buffer.from(buffer));
     return { success: true, outputPath: filePath };
-  } catch (err: any) {
-    return { success: false, error: err.message };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('file:saveFilesBulk', async (_event, files: {name: string, buffer: ArrayBuffer}[]) => {
+  const { canceled, filePaths } = await dialog.showOpenDialog({
+    title: 'Select Export Directory',
+    properties: ['openDirectory', 'createDirectory']
+  });
+
+  if (canceled || filePaths.length === 0) {
+    return { success: false, error: 'Canceled by user' };
+  }
+
+  const outputDir = filePaths[0];
+
+  try {
+    for (const file of files) {
+      fs.writeFileSync(path.join(outputDir, file.name), Buffer.from(file.buffer));
+    }
+    return { success: true, outputPath: outputDir };
+  } catch (error: any) {
+    return { success: false, error: error.message };
   }
 });
 
@@ -146,6 +168,8 @@ ipcMain.handle('media:extractAudio', async (event, inputPath) => {
       .on('progress', (progress) => {
          if (progress.percent) {
            mainWindow?.webContents.send('media:extractAudio:progress', progress.percent);
+         } else {
+           mainWindow?.webContents.send('media:extractAudio:progress', 45); // Fake indeterminate
          }
       })
       .on('error', (err) => {
@@ -172,6 +196,8 @@ ipcMain.handle('media:extractAudioBulk', async (event, inputPath, outputFolder, 
       .on('progress', (progress) => {
          if (progress.percent) {
            mainWindow?.webContents.send('media:extractAudio:progress', progress.percent);
+         } else {
+           mainWindow?.webContents.send('media:extractAudio:progress', 45); // Fake indeterminate
          }
       })
       .on('error', (err) => {

@@ -7,6 +7,7 @@ declare global {
       openMultipleFiles: (options?: any) => Promise<string[]>;
       openDirectory: () => Promise<string | null>;
       saveBuffer: (buffer: ArrayBuffer, defaultName: string) => Promise<{success: boolean, outputPath?: string, error?: string}>;
+      saveFilesBulk: (files: {name: string, buffer: ArrayBuffer}[]) => Promise<{success: boolean, outputPath?: string, error?: string}>;
       getAppVersion: () => Promise<string>;
       extractAudio: (inputPath: string) => Promise<{success: boolean, outputPath?: string, error?: string}>;
       extractAudioBulk: (inputPath: string, outputFolder: string, fileName: string) => Promise<{success: boolean, error?: string}>;

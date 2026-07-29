@@ -1,15 +1,15 @@
 import { useState } from 'react';
-import { Merge, SplitSquareHorizontal, FilePlus, X, ArrowLeft, Download, FileText, Settings2 } from 'lucide-react';
+import { Merge, SplitSquareHorizontal, FilePlus, X, ArrowLeft, Download, FileText, Settings2, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { PDFDocument } from 'pdf-lib';
 
 export default function PdfTools() {
-  const [activeTool, setActiveTool] = useState<'none' | 'merge' | 'split'>('none');
+  const [activeTool, setActiveTool] = useState<'none' | 'merge' | 'split' | 'to-image'>('none');
   
   // Merge State
   const [mergeFiles, setMergeFiles] = useState<File[]>([]);
   
-  // Split State
+  // Split / To-Image State
   const [splitFile, setSplitFile] = useState<File | null>(null);
   const [splitRange, setSplitRange] = useState('');
   
@@ -143,6 +143,59 @@ export default function PdfTools() {
     }
   };
 
+  const executePdfToImage = async () => {
+    if (!splitFile) return;
+    setIsProcessing(true);
+    
+    try {
+      const pdfjsLib = await import('pdfjs-dist');
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+      
+      const arrayBuffer = await splitFile.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+      const totalPages = pdf.numPages;
+      
+      const files: {name: string, buffer: ArrayBuffer}[] = [];
+      toast.info(`Converting ${totalPages} pages to images...`);
+      
+      for (let i = 1; i <= totalPages; i++) {
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 2.0 }); // High res
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        if (!context) continue;
+        
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        
+        await page.render({ canvasContext: context, viewport: viewport }).promise;
+        
+        const blob = await new Promise<Blob | null>(res => canvas.toBlob(res, 'image/png'));
+        if (blob) {
+          const buffer = await blob.arrayBuffer();
+          files.push({ name: `Page_${i}.png`, buffer });
+        }
+      }
+      
+      if (window.electronAPI && window.electronAPI.saveFilesBulk) {
+        const result = await window.electronAPI.saveFilesBulk(files);
+        if (result.success) {
+          toast.success(`Exported ${files.length} images successfully!`);
+          setSplitFile(null);
+        } else if (result.error !== 'Canceled by user') {
+          toast.error(result.error);
+        }
+      } else {
+        toast.error('Native bulk file saving not available in browser sandbox.');
+      }
+    } catch(e) {
+      console.error(e);
+      toast.error('Error converting PDF to images.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return (
     <div className="h-full flex flex-col">
       <div className="mb-8 flex items-center justify-between">
@@ -156,7 +209,7 @@ export default function PdfTools() {
                 <ArrowLeft size={20} className="text-zinc-500 dark:text-[#a3a3a3]" />
               </button>
             )}
-            PDF Tools {activeTool === 'merge' && '- Merge'} {activeTool === 'split' && '- Split'}
+            PDF Tools {activeTool === 'merge' && '- Merge'} {activeTool === 'split' && '- Split'} {activeTool === 'to-image' && '- To Images'}
           </h2>
           <p className="text-sm text-zinc-500 dark:text-[#a3a3a3] mt-1">
             {activeTool === 'none' ? 'Locally manipulate PDF documents securely.' : 'Processed 100% locally on your machine.'}
@@ -186,6 +239,17 @@ export default function PdfTools() {
             </div>
             <h3 className="text-base font-medium text-zinc-900 dark:text-[#ededed] mb-1">Split PDF</h3>
             <p className="text-xs text-zinc-500 dark:text-[#737373] leading-relaxed">Extract specific pages or chunk a large PDF into multiple smaller files.</p>
+          </div>
+
+          <div 
+            onClick={() => setActiveTool('to-image')}
+            className="bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] hover:border-zinc-400 dark:hover:border-[#404040] rounded-md p-6 cursor-pointer group transition-none"
+          >
+            <div className="w-10 h-10 bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-200 dark:border-[#262626] rounded-md flex items-center justify-center mb-4">
+              <ImageIcon size={18} className="text-zinc-500 dark:text-[#a3a3a3] group-hover:text-zinc-900 dark:group-hover:text-[#ededed]" />
+            </div>
+            <h3 className="text-base font-medium text-zinc-900 dark:text-[#ededed] mb-1">PDF to Images</h3>
+            <p className="text-xs text-zinc-500 dark:text-[#737373] leading-relaxed">Rasterize each page of your PDF into high-quality PNG images.</p>
           </div>
         </div>
       )}
@@ -309,6 +373,68 @@ export default function PdfTools() {
             >
               <Download size={16} className="mr-2" /> 
               {isProcessing ? 'Processing...' : 'Extract Pages'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* TO IMAGE UI */}
+      {activeTool === 'to-image' && (
+        <div className="bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] rounded-md overflow-hidden flex flex-col md:flex-row min-h-[400px]">
+          <div className="flex-1 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-[#262626] flex flex-col relative overflow-hidden bg-zinc-100 dark:bg-[#090909]">
+            {splitFile ? (
+              <div className="relative w-full h-full flex-1 min-h-[350px]">
+                <embed 
+                  src={`${URL.createObjectURL(splitFile)}#toolbar=0&navpanes=0&scrollbar=0`} 
+                  type="application/pdf" 
+                  className="w-full h-full"
+                />
+                <button 
+                  onClick={() => setSplitFile(null)}
+                  className="absolute top-4 right-4 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg transition-colors"
+                  title="Remove PDF"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            ) : (
+              <label className="flex-1 m-8 border border-dashed border-zinc-300 dark:border-[#404040] hover:border-zinc-400 dark:hover:border-[#737373] bg-zinc-50 dark:bg-[#0e0e0e] rounded-md flex flex-col items-center justify-center p-6 cursor-pointer transition-none">
+                <FileText size={32} strokeWidth={1.5} className="text-zinc-500 dark:text-[#737373] mb-4" />
+                <span className="text-sm font-medium text-zinc-900 dark:text-[#ededed] mb-1 text-center">
+                  Select PDF
+                </span>
+                <span className="text-xs text-zinc-500 dark:text-[#737373] text-center">
+                  Only .pdf files supported
+                </span>
+                <input type="file" accept="application/pdf" className="hidden" onChange={handleSplitFile} />
+              </label>
+            )}
+          </div>
+
+          <div className="w-full md:w-72 bg-white dark:bg-[#141414] p-6 flex flex-col">
+            <div className="flex items-center text-xs font-semibold text-zinc-500 dark:text-[#737373] uppercase tracking-wider mb-6">
+              <Settings2 size={14} className="mr-2" /> Parameters
+            </div>
+
+            <div className="space-y-5 flex-1">
+              <div>
+                <p className="text-xs text-zinc-500 dark:text-[#737373]">
+                  All pages will be rendered as high-quality PNG images and saved to a directory of your choice.
+                </p>
+              </div>
+            </div>
+
+            <button 
+              onClick={executePdfToImage}
+              disabled={!splitFile || isProcessing}
+              className={`w-full mt-6 py-2 rounded-md text-sm font-medium transition-none flex items-center justify-center ${
+                !splitFile || isProcessing
+                  ? 'bg-zinc-100 dark:bg-[#262626] text-zinc-500 dark:text-[#737373] cursor-not-allowed'
+                  : 'bg-zinc-900 hover:bg-zinc-800 dark:bg-[#ededed] dark:hover:bg-white text-white dark:text-[#0e0e0e]'
+              }`}
+            >
+              <ImageIcon size={16} className="mr-2" /> 
+              {isProcessing ? 'Converting...' : 'Convert to PNG'}
             </button>
           </div>
         </div>
