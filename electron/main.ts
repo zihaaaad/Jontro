@@ -92,8 +92,7 @@ ipcMain.handle('system:saveBuffer', async (event, buffer, defaultName) => {
 });
 
 import ffmpeg from 'fluent-ffmpeg';
-import path from 'path';
-import fs from 'fs';
+
 
 let ffmpegPath = '';
 const prodPath = path.join(process.resourcesPath, 'app.asar.unpacked', 'node_modules', '@ffmpeg-installer', 'win32-x64', 'ffmpeg.exe');
