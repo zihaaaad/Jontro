@@ -16,6 +16,7 @@ export default function ImageResizer() {
   const [width, setWidth] = useState('');
   const [height, setHeight] = useState('');
   const [format, setFormat] = useState('Same as original');
+  const [filter, setFilter] = useState('Original');
   const [isExporting, setIsExporting] = useState(false);
   
   // Cropper state
@@ -93,7 +94,6 @@ export default function ImageResizer() {
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
         
-        // Draw only the cropped portion of the original image!
         ctx.drawImage(
           img,
           croppedAreaPixels.x,
@@ -105,6 +105,19 @@ export default function ImageResizer() {
           targetW,
           targetH
         );
+        
+        // ALGORITHMIC PIXEL MANIPULATION (Grayscale Filter)
+        if (filter === 'Grayscale') {
+          const imgData = ctx.getImageData(0, 0, targetW, targetH);
+          const data = imgData.data;
+          for (let i = 0; i < data.length; i += 4) {
+            const r = data[i], g = data[i+1], b = data[i+2];
+            // Advanced human-eye weighted luminance formula
+            const gray = (r * 0.299) + (g * 0.587) + (b * 0.114);
+            data[i] = data[i+1] = data[i+2] = gray;
+          }
+          ctx.putImageData(imgData, 0, 0);
+        }
       }
 
       const mimeType = format === 'JPEG' ? 'image/jpeg' : format === 'WEBP' ? 'image/webp' : format === 'PNG' ? 'image/png' : selectedFile.type;
@@ -233,6 +246,18 @@ export default function ImageResizer() {
                 className="w-full bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-300 dark:border-[#404040] rounded text-sm px-3 py-2 text-zinc-900 dark:text-[#ededed] focus:outline-none focus:border-zinc-500 dark:focus:border-[#737373]" 
               />
             </div>
+            <div>
+              <label className="block text-xs text-zinc-500 dark:text-[#a3a3a3] mb-1.5">Algorithmic Filter</label>
+              <select 
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                className="w-full bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-300 dark:border-[#404040] rounded text-sm px-3 py-2 text-zinc-900 dark:text-[#ededed] focus:outline-none focus:border-zinc-500 dark:focus:border-[#737373] appearance-none"
+              >
+                <option>Original</option>
+                <option>Grayscale</option>
+              </select>
+            </div>
+            
             <div>
               <label className="block text-xs text-zinc-500 dark:text-[#a3a3a3] mb-1.5">Output Format</label>
               <select 

@@ -8,6 +8,7 @@ export default function VideoConverter() {
   const [progress, setProgress] = useState(0);
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
   const [status, setStatus] = useState<'idle' | 'converting' | 'success' | 'error'>('idle');
+  const [normalizeAudio, setNormalizeAudio] = useState(false);
 
   const handleNativeFileSelect = async () => {
     if (window.electronAPI && window.electronAPI.openMultipleFiles) {
@@ -63,7 +64,7 @@ export default function VideoConverter() {
         const outFileName = `${filenameWithoutExt}.mp3`;
         
         try {
-          const result = await window.electronAPI.extractAudioBulk(inputPath, outFolder, outFileName);
+          const result = await window.electronAPI.extractAudioBulk(inputPath, outFolder, outFileName, normalizeAudio);
           if (result && result.success) {
             successCount++;
           } else {
@@ -165,7 +166,17 @@ export default function VideoConverter() {
           </div>
         )}
 
-        <div className="flex justify-end pt-4 border-t border-zinc-200 dark:border-[#262626]">
+        <div className="flex flex-col md:flex-row justify-between items-center pt-4 border-t border-zinc-200 dark:border-[#262626] gap-4">
+          <label className="flex items-center cursor-pointer">
+            <input 
+              type="checkbox" 
+              checked={normalizeAudio}
+              onChange={(e) => setNormalizeAudio(e.target.checked)}
+              className="w-4 h-4 rounded-sm border border-zinc-300 dark:border-[#404040] bg-white dark:bg-[#0e0e0e] checked:bg-blue-500 checked:border-blue-500 appearance-none flex items-center justify-center before:content-[''] before:w-2 before:h-2 before:bg-white before:scale-0 checked:before:scale-100 before:transition-none"
+            />
+            <span className="ml-3 text-sm text-zinc-700 dark:text-[#ededed]">Apply EBU R128 Loudness Normalization</span>
+          </label>
+          
           <button 
             onClick={startConversion}
             disabled={selectedFiles.length === 0 || isConverting}

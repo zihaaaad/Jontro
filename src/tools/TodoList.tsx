@@ -13,18 +13,48 @@ export default function TodoList() {
 
   useEffect(() => localStorage.setItem('jontro-todos', JSON.stringify(tasks)), [tasks]);
 
+  // ALGORITHMIC NLP URGENCY DETECTOR
+  const getUrgencyScore = (text: string) => {
+    const lower = text.toLowerCase();
+    let score = 0;
+    if (lower.match(/\b(urgent|asap|now|immediate)\b/)) score += 100;
+    if (lower.match(/\b(important|critical|high)\b/)) score += 50;
+    if (lower.match(/\b(today|tonight)\b/)) score += 20;
+    if (lower.match(/\b(tomorrow)\b/)) score += 10;
+    return score;
+  };
+
   const addTask = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTask.trim()) return;
-    setTasks([{ id: Date.now().toString(), text: newTask.trim(), completed: false }, ...tasks]);
+    
+    const newTaskObj = { id: Date.now().toString(), text: newTask.trim(), completed: false, urgency: getUrgencyScore(newTask) };
+    
+    setTasks(prev => {
+      const updated = [newTaskObj, ...prev];
+      return updated.sort((a, b) => {
+        if (a.completed !== b.completed) return a.completed ? 1 : -1;
+        // @ts-ignore
+        return (b.urgency || 0) - (a.urgency || 0);
+      });
+    });
+    
     setNewTask('');
-    toast.success('Task created');
+    toast.success('Task created & algorithmically sorted');
   };
 
-  const toggleTask = (id: string) => setTasks(tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+  const toggleTask = (id: string) => setTasks(prev => {
+    const updated = prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+    return updated.sort((a, b) => {
+      if (a.completed !== b.completed) return a.completed ? 1 : -1;
+      // @ts-ignore
+      return (b.urgency || 0) - (a.urgency || 0);
+    });
+  });
+
   const deleteTask = (id: string) => {
     setTasks(tasks.filter(t => t.id !== id));
-    toast.error('Task removed'); // Bug fix: Removed hardcoded dark theme colors so Sonner uses global theme
+    toast.error('Task removed');
   };
 
   return (
@@ -63,7 +93,17 @@ export default function TodoList() {
                       type="checkbox" checked={task.completed} onChange={() => toggleTask(task.id)}
                       className="w-4 h-4 rounded-sm border border-zinc-300 dark:border-[#555] bg-white dark:bg-transparent checked:bg-blue-500 dark:checked:bg-blue-500 checked:border-blue-500 appearance-none flex-shrink-0 relative before:content-[''] before:absolute before:inset-0 before:m-auto before:w-2 before:h-2 before:bg-white before:scale-0 checked:before:scale-100 before:transition-none"
                     />
-                    <span className={`ml-3 text-sm ${task.completed ? 'text-zinc-500 dark:text-[#737373] line-through' : 'text-zinc-700 dark:text-[#ededed]'}`}>{task.text}</span>
+                    <span className={`ml-3 text-sm flex items-center ${task.completed ? 'text-zinc-500 dark:text-[#737373] line-through' : 'text-zinc-700 dark:text-[#ededed]'}`}>
+                      {task.text}
+                      {/* @ts-ignore */}
+                      {task.urgency >= 100 && !task.completed && (
+                        <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-900/50 uppercase tracking-wider">Urgent</span>
+                      )}
+                      {/* @ts-ignore */}
+                      {task.urgency >= 50 && task.urgency < 100 && !task.completed && (
+                        <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-900/50 uppercase tracking-wider">High Priority</span>
+                      )}
+                    </span>
                   </label>
                   <button onClick={() => deleteTask(task.id)} className="ml-4 p-1.5 text-zinc-500 dark:text-[#737373] hover:text-red-500 dark:hover:text-[#ededed] opacity-0 group-hover:opacity-100 transition-none">
                     <Trash2 size={14} />

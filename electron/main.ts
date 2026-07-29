@@ -184,16 +184,22 @@ ipcMain.handle('media:extractAudio', async (event, inputPath) => {
   });
 });
 
-ipcMain.handle('media:extractAudioBulk', async (event, inputPath, outputFolder, fileName) => {
+ipcMain.handle('media:extractAudioBulk', async (event, inputPath, outputFolder, fileName, normalizeAudio) => {
   if (!mainWindow) return { success: false, error: 'No window' };
   
   const outputPath = path.join(outputFolder, fileName);
 
   return new Promise((resolve) => {
-    ffmpeg(inputPath)
+    let command = ffmpeg(inputPath)
       .noVideo()
-      .audioCodec('libmp3lame')
-      .on('progress', (progress) => {
+      .audioCodec('libmp3lame');
+      
+    if (normalizeAudio) {
+      // ADVANCED ALGORITHM: EBU R128 Loudness Normalization
+      command = command.audioFilters('loudnorm=I=-16:TP=-1.5:LRA=11');
+    }
+
+    command.on('progress', (progress) => {
          if (progress.percent) {
            mainWindow?.webContents.send('media:extractAudio:progress', progress.percent);
          } else {

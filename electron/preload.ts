@@ -14,7 +14,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   // Media
   extractAudio: (inputPath: string) => ipcRenderer.invoke('media:extractAudio', inputPath),
-  extractAudioBulk: (inputPath: string, outputFolder: string, fileName: string) => ipcRenderer.invoke('media:extractAudioBulk', inputPath, outputFolder, fileName),
+  extractAudioBulk: (inputPath: string, outputFolder: string, fileName: string, normalizeAudio: boolean) => ipcRenderer.invoke('media:extractAudioBulk', inputPath, outputFolder, fileName, normalizeAudio),
   onExtractionProgress: (callback: (progress: number) => void) => {
     ipcRenderer.removeAllListeners('media:extractAudio:progress');
     ipcRenderer.on('media:extractAudio:progress', (_event, progress) => callback(progress));
