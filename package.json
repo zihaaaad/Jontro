@@ -1,7 +1,7 @@
 {
   "name": "jontro",
   "private": true,
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
@@ -22,7 +22,11 @@
     "directories": {
       "output": "release"
     },
+    "asarUnpack": [
+      "node_modules/@ffmpeg-installer/**/*.exe"
+    ],
     "files": [
+      "package.json",
       "dist/**/*",
       "dist-electron/**/*"
     ]

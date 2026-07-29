@@ -94,8 +94,16 @@ ipcMain.handle('system:saveBuffer', async (event, buffer, defaultName) => {
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegStatic from '@ffmpeg-installer/ffmpeg';
 
+// Safely extract the path
+let ffmpegPath = (ffmpegStatic as any).path || (ffmpegStatic as any).default?.path || '';
+
+// If packed inside asar archive, point to the unpacked binary folder
+if (ffmpegPath.includes('app.asar')) {
+  ffmpegPath = ffmpegPath.replace('app.asar', 'app.asar.unpacked');
+}
+
 // Set static binary path so it works in the compiled .exe
-ffmpeg.setFfmpegPath(ffmpegStatic.path);
+ffmpeg.setFfmpegPath(ffmpegPath);
 
 ipcMain.handle('system:getAppVersion', () => {
   return app.getVersion();
