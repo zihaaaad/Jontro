@@ -23,7 +23,7 @@ const createWindow = () => {
     backgroundColor: '#0e0e0e', // Prevents white flash on load
     autoHideMenuBar: true, // Hide messy Windows menu bar
     webPreferences: {
-      preload: path.join(__dirname, 'preload.mjs'),
+      preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false, // Required to expose native File.path for media conversion
