@@ -152,7 +152,8 @@ export default function PdfTools() {
       pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
       
       const arrayBuffer = await splitFile.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+      // @ts-ignore - pdfjs-dist types mismatch for getDocument
+      const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
       const totalPages = pdf.numPages;
       
       const files: {name: string, buffer: ArrayBuffer}[] = [];
@@ -168,6 +169,7 @@ export default function PdfTools() {
         canvas.height = viewport.height;
         canvas.width = viewport.width;
         
+        // @ts-ignore - pdfjs-dist types mismatch for render
         await page.render({ canvasContext: context, viewport: viewport }).promise;
         
         const blob = await new Promise<Blob | null>(res => canvas.toBlob(res, 'image/png'));

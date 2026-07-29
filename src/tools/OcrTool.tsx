@@ -46,7 +46,7 @@ export default function OcrTool() {
     setProgress(0);
     
     try {
-      const result = await Tesseract.recognize(file, 'eng', {
+      const result = await Tesseract.recognize(file, 'eng+ben', {
         logger: m => {
           if (m.status === 'recognizing text') {
             setProgress(m.progress * 100);
@@ -148,7 +148,7 @@ export default function OcrTool() {
           <div className="flex items-center justify-between mb-4 border-b border-zinc-200 dark:border-[#262626] pb-4">
             <div className="flex items-center text-xs text-zinc-500 dark:text-[#737373]">
               <Languages size={14} className="mr-2" />
-              Engine: <span className="text-zinc-900 dark:text-[#ededed] ml-1 font-medium">Tesseract v5 (ENG)</span>
+              Engine: <span className="text-zinc-900 dark:text-[#ededed] ml-1 font-medium">Tesseract v5 (ENG/BEN)</span>
             </div>
             <button 
               onClick={copyToClipboard}
