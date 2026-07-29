@@ -26,6 +26,7 @@ const createWindow = () => {
       preload: path.join(__dirname, 'preload.mjs'),
       contextIsolation: true,
       nodeIntegration: false,
+      sandbox: false, // Required to expose native File.path for media conversion
     },
   });
 
