@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Copy, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
+import zxcvbn from 'zxcvbn';
 
 export default function PasswordGen() {
   const [password, setPassword] = useState('****************');
@@ -8,6 +9,8 @@ export default function PasswordGen() {
   const [includeUppercase, setIncludeUppercase] = useState(true);
   const [includeNumbers, setIncludeNumbers] = useState(true);
   const [includeSymbols, setIncludeSymbols] = useState(true);
+
+  const [score, setScore] = useState(0);
 
   const generatePassword = () => {
     let charset = 'abcdefghijklmnopqrstuvwxyz';
@@ -22,6 +25,10 @@ export default function PasswordGen() {
       newPassword += charset[array[i] % charset.length];
     }
     setPassword(newPassword);
+    
+    // Algorithmic Entropy Analysis using zxcvbn
+    const result = zxcvbn(newPassword);
+    setScore(result.score); // 0 to 4
   };
 
   const copyToClipboard = () => {
@@ -33,26 +40,41 @@ export default function PasswordGen() {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="mb-8">
-        <h2 className="text-2xl font-medium text-zinc-900 dark:text-[#ededed]">Password Generator</h2>
-        <p className="text-sm text-zinc-500 dark:text-[#a3a3a3] mt-1">Generate cryptographically secure random passwords.</p>
+      <div className="mb-8 flex justify-between items-end">
+        <div>
+          <h2 className="text-2xl font-medium text-zinc-900 dark:text-[#ededed]">Password Generator</h2>
+          <p className="text-sm text-zinc-500 dark:text-[#a3a3a3] mt-1">Generate cryptographically secure random passwords.</p>
+        </div>
       </div>
 
       <div className="bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] rounded-md p-8 max-w-2xl">
         
-        <div className="mb-8 flex gap-3">
-          <div className="flex-1 bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-300 dark:border-[#404040] rounded-md px-4 py-3 flex items-center">
-            <span className="text-lg font-mono text-zinc-900 dark:text-[#ededed] tracking-wider break-all">
+        <div className="mb-6 flex gap-3">
+          <div className="flex-1 bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-300 dark:border-[#404040] rounded-md px-4 py-3 flex flex-col justify-center relative">
+            <span className="text-lg font-mono text-zinc-900 dark:text-[#ededed] tracking-wider break-all z-10">
               {password}
             </span>
+            {/* Algorithmic strength bar */}
+            {password !== '****************' && (
+              <div className="absolute bottom-0 left-0 h-1 rounded-bl-md rounded-br-md transition-none" style={{
+                width: `${(score + 1) * 20}%`,
+                backgroundColor: score < 2 ? '#ef4444' : score < 4 ? '#eab308' : '#22c55e'
+              }}></div>
+            )}
           </div>
           <button 
             onClick={copyToClipboard}
-            className="px-4 bg-zinc-100 dark:bg-[#262626] hover:bg-zinc-200 dark:hover:bg-[#333333] border border-zinc-300 dark:border-[#404040] text-zinc-700 dark:text-[#ededed] rounded-md transition-none flex items-center justify-center"
+            className="px-4 bg-zinc-100 dark:bg-[#262626] hover:bg-zinc-200 dark:hover:bg-[#333333] border border-zinc-300 dark:border-[#404040] text-zinc-700 dark:text-[#ededed] rounded-md transition-none flex items-center justify-center h-[54px]"
           >
             <Copy size={16} />
           </button>
         </div>
+        
+        {password !== '****************' && (
+          <div className="mb-6 text-xs font-medium text-zinc-500 dark:text-[#737373] uppercase tracking-wider flex items-center">
+            Algorithmic Entropy: <span className={`ml-2 px-2 py-0.5 rounded text-white ${score < 2 ? 'bg-red-500' : score < 4 ? 'bg-yellow-500' : 'bg-green-500'}`}>{score < 2 ? 'Weak' : score < 4 ? 'Good' : 'Uncrackable'}</span>
+          </div>
+        )}
 
         <div className="space-y-6">
           <div>

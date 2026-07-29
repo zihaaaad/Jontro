@@ -11,6 +11,7 @@ import PdfTools from './tools/PdfTools';
 import OcrTool from './tools/OcrTool';
 import QrStudio from './tools/QrStudio';
 import HomeDashboard from './tools/HomeDashboard';
+import VectorTracer from './tools/VectorTracer';
 import { Toaster } from 'sonner';
 import pkg from '../package.json';
 
@@ -40,6 +41,7 @@ function App() {
   const tools = [
     { id: 'video-converter', name: 'Video to Audio', icon: FileAudio },
     { id: 'image-resizer', name: 'Image Resizer', icon: ImageIcon },
+    { id: 'vector-tracer', name: 'Vector Tracer', icon: ImageIcon },
     { id: 'pdf-tools', name: 'PDF Tools', icon: Files },
     { id: 'ocr-tool', name: 'Screenshot & OCR', icon: ScanText },
     { id: 'qr-studio', name: 'QR Studio', icon: ImageIcon },
@@ -166,6 +168,7 @@ function App() {
             {activeTab === 'todo-list' && <TodoList />}
             {activeTab === 'password-gen' && <PasswordGen />}
             {activeTab === 'image-resizer' && <ImageResizer />}
+            {activeTab === 'vector-tracer' && <VectorTracer />}
             { activeTab === 'pdf-tools' && <PdfTools /> }
             { activeTab === 'ocr-tool' && <OcrTool /> }
             { activeTab === 'qr-studio' && <QrStudio /> }

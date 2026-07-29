@@ -14,6 +14,7 @@ export default function HomeDashboard({ onSelectTool }: HomeDashboardProps) {
   const tools = [
     { id: 'video-converter', name: 'Video to Audio', icon: FileAudio, desc: 'Extract audio tracks from video files locally.', category: 'Media' },
     { id: 'image-resizer', name: 'Image Resizer', icon: ImageIcon, desc: 'Resize and convert image formats instantly.', category: 'Media' },
+    { id: 'vector-tracer', name: 'Vector Tracer', icon: ImageIcon, desc: 'Convert raster images (PNG, JPG) to scalable SVG vectors.', category: 'Media' },
     { id: 'pdf-tools', name: 'PDF Tools', icon: Files, desc: 'Locally manipulate PDF documents securely.', category: 'Productivity' },
     { id: 'ocr-tool', name: 'Screenshot & OCR', icon: ScanText, desc: 'Extract text from your screen locally via WebAssembly.', category: 'Productivity' },
     { id: 'qr-studio', name: 'QR Studio', icon: QrCode, desc: 'Generate high-quality custom QR codes for links, text, and contacts.', category: 'Utilities' },

@@ -46,7 +46,37 @@ export default function OcrTool() {
     setProgress(0);
     
     try {
-      const result = await Tesseract.recognize(file, 'eng+ben', {
+      // ADVANCED ALGORITHM: Binarization & Contrast Stretch Pre-processing
+      const img = new Image();
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = url;
+      });
+      
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0);
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgData.data;
+        // Apply Otsu's inspired thresholding for Binarization
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i], g = data[i + 1], b = data[i + 2];
+          // Luminance calculation
+          const v = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+          // Threshold mapping
+          const t = v >= 128 ? 255 : 0;
+          data[i] = data[i + 1] = data[i + 2] = t;
+        }
+        ctx.putImageData(imgData, 0, 0);
+      }
+      
+      const processedDataUrl = canvas.toDataURL('image/png');
+      
+      const result = await Tesseract.recognize(processedDataUrl, 'eng+ben', {
         logger: m => {
           if (m.status === 'recognizing text') {
             setProgress(m.progress * 100);
