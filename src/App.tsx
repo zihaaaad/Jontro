@@ -69,7 +69,7 @@ function App() {
       />
       
       {/* Sidebar */}
-      <div className="w-16 md:w-64 bg-white dark:bg-[#141414] border-r border-zinc-200 dark:border-[#262626] flex flex-col z-10 shrink-0 transition-all duration-200">
+      <div className="w-16 md:w-64 bg-white dark:bg-[#141414] border-r border-zinc-200 dark:border-[#262626] flex flex-col z-10 shrink-0 transition-none">
         {/* App Header */}
         <div className="h-14 flex items-center justify-center md:justify-between px-0 md:px-5 border-b border-zinc-200 dark:border-[#262626]">
           <div className="flex items-center">

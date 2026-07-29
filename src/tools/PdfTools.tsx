@@ -323,7 +323,7 @@ export default function PdfTools() {
                 />
                 <button 
                   onClick={() => setSplitFile(null)}
-                  className="absolute top-4 right-4 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg transition-colors"
+                  className="absolute top-4 right-4 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg transition-none"
                   title="Remove PDF"
                 >
                   <X size={16} />
@@ -393,7 +393,7 @@ export default function PdfTools() {
                 />
                 <button 
                   onClick={() => setSplitFile(null)}
-                  className="absolute top-4 right-4 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg transition-colors"
+                  className="absolute top-4 right-4 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg transition-none"
                   title="Remove PDF"
                 >
                   <X size={16} />

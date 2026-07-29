@@ -61,7 +61,7 @@ export default function TodoList() {
                     {/* Bug fix: bg-white for light mode checkbox so it doesn't look invisible */}
                     <input 
                       type="checkbox" checked={task.completed} onChange={() => toggleTask(task.id)}
-                      className="w-4 h-4 rounded-sm border border-zinc-300 dark:border-[#555] bg-white dark:bg-transparent checked:bg-blue-500 dark:checked:bg-blue-500 checked:border-blue-500 appearance-none flex-shrink-0 relative before:content-[''] before:absolute before:inset-0 before:m-auto before:w-2 before:h-2 before:bg-white before:scale-0 checked:before:scale-100 before:transition-transform"
+                      className="w-4 h-4 rounded-sm border border-zinc-300 dark:border-[#555] bg-white dark:bg-transparent checked:bg-blue-500 dark:checked:bg-blue-500 checked:border-blue-500 appearance-none flex-shrink-0 relative before:content-[''] before:absolute before:inset-0 before:m-auto before:w-2 before:h-2 before:bg-white before:scale-0 checked:before:scale-100 before:transition-none"
                     />
                     <span className={`ml-3 text-sm ${task.completed ? 'text-zinc-500 dark:text-[#737373] line-through' : 'text-zinc-700 dark:text-[#ededed]'}`}>{task.text}</span>
                   </label>

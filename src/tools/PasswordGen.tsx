@@ -3,7 +3,7 @@ import { Copy, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function PasswordGen() {
-  const [password, setPassword] = useState('••••••••••••••••');
+  const [password, setPassword] = useState('****************');
   const [length, setLength] = useState(16);
   const [includeUppercase, setIncludeUppercase] = useState(true);
   const [includeNumbers, setIncludeNumbers] = useState(true);
@@ -25,7 +25,7 @@ export default function PasswordGen() {
   };
 
   const copyToClipboard = () => {
-    if(password !== '••••••••••••••••') {
+    if(password !== '****************') {
       navigator.clipboard.writeText(password);
       toast.success('Password copied to clipboard');
     }
@@ -78,7 +78,7 @@ export default function PasswordGen() {
                 {/* Bug fix: Added light mode background for checkboxes */}
                 <input 
                   type="checkbox" 
-                  className="w-4 h-4 rounded-sm border border-zinc-300 dark:border-[#404040] bg-white dark:bg-[#0e0e0e] checked:bg-blue-500 checked:border-blue-500 appearance-none flex items-center justify-center before:content-[''] before:w-2 before:h-2 before:bg-white before:scale-0 checked:before:scale-100 before:transition-transform"
+                  className="w-4 h-4 rounded-sm border border-zinc-300 dark:border-[#404040] bg-white dark:bg-[#0e0e0e] checked:bg-blue-500 checked:border-blue-500 appearance-none flex items-center justify-center before:content-[''] before:w-2 before:h-2 before:bg-white before:scale-0 checked:before:scale-100 before:transition-none"
                   checked={item.state} 
                   disabled={item.disabled}
                   onChange={() => item.set && item.set(!item.state)} 

@@ -169,7 +169,7 @@ export default function ImageResizer() {
               />
               <button 
                 onClick={clearImage}
-                className="absolute top-4 right-4 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg transition-colors"
+                className="absolute top-4 right-4 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg transition-none"
                 title="Clear Image"
               >
                 <X size={16} />

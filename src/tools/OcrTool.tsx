@@ -122,7 +122,7 @@ export default function OcrTool() {
                 <img 
                   src={previewImage} 
                   alt="Scanning Target" 
-                  className={`max-w-full max-h-full object-contain rounded shadow-sm transition-opacity duration-300 ${isProcessing ? 'opacity-30 blur-sm' : 'opacity-100'}`} 
+                  className={`max-w-full max-h-full object-contain rounded shadow-sm transition-none ${isProcessing ? 'opacity-30 blur-sm' : 'opacity-100'}`} 
                 />
               )}
               

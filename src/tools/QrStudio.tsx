@@ -88,7 +88,7 @@ export default function QrStudio() {
           
           <div 
             ref={qrRef}
-            className="p-8 bg-white shadow-sm border border-zinc-200 rounded-xl transition-all duration-300"
+            className="p-8 bg-white shadow-sm border border-zinc-200 rounded-xl transition-none"
             style={{ backgroundColor: bgColor }}
           >
             <QRCodeSVG 
