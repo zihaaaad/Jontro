@@ -16,12 +16,12 @@ export default function HomeDashboard({ onSelectTool }: HomeDashboardProps) {
     { id: 'image-resizer', name: 'Image Resizer', icon: ImageIcon, desc: 'Resize and convert image formats instantly.', category: 'Media' },
     { id: 'pdf-tools', name: 'PDF Tools', icon: Files, desc: 'Locally manipulate PDF documents securely.', category: 'Productivity' },
     { id: 'ocr-tool', name: 'Screenshot & OCR', icon: ScanText, desc: 'Extract text from your screen locally via WebAssembly.', category: 'Productivity' },
+    { id: 'qr-studio', name: 'QR Studio', icon: QrCode, desc: 'Generate high-quality custom QR codes for links, text, and contacts.', category: 'Utilities' },
     { id: 'todo-list', name: 'Task Manager', icon: ListTodo, desc: 'Organize your daily utility workflows.', category: 'Productivity' },
     { id: 'password-gen', name: 'Password Gen', icon: KeyRound, desc: 'Generate cryptographically secure random passwords.', category: 'Security' },
   ];
 
   const comingSoonTools = [
-    { name: 'QR Code Studio', icon: QrCode, desc: 'Generate custom QR codes for Wi-Fi, links, and contacts.', category: 'Utilities' },
     { name: 'Smart Unit Converter', icon: ArrowRightLeft, desc: 'Instantly convert currency, length, weight, and temperatures.', category: 'Utilities' },
     { name: 'Focus Timer', icon: Timer, desc: 'Pomodoro timer to boost your daily productivity.', category: 'Productivity' },
     { name: 'Voice Memo Recorder', icon: Mic, desc: 'Quickly record and save high-quality audio notes locally.', category: 'Media' }
