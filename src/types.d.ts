@@ -4,6 +4,7 @@ declare global {
   interface Window {
     electronAPI?: {
       openFile: (options?: any) => Promise<string | null>;
+      openMultipleFiles: (options?: any) => Promise<string[]>;
       openDirectory: () => Promise<string | null>;
       saveBuffer: (buffer: ArrayBuffer, defaultName: string) => Promise<{success: boolean, outputPath?: string, error?: string}>;
       getAppVersion: () => Promise<string>;
