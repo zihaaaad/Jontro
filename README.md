@@ -24,10 +24,10 @@ To run this project locally, ensure you have Node.js installed.
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/jontro.git
+git clone https://github.com/zihaaaad/Jontro.git
 
 # Navigate to the project directory
-cd jontro
+cd Jontro
 
 # Install dependencies
 npm install
