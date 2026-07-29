@@ -1,0 +1,60 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Triggers when you push a tag like v1.0.0
+  workflow_dispatch: # Allows you to manually click "Run workflow" in GitHub Actions tab
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    
+    # We need write permissions to upload the .exe to the Release page
+    permissions:
+      contents: write 
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Compile Application & Build .exe Installer
+        run: npm run build
+        env:
+          # GitHub provides this automatically
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate Data-Driven Release Notes
+        id: changelog
+        run: |
+          echo "## Jontro Build Analytics" > release-notes.md
+          echo "Automated Release Pipeline Execution." >> release-notes.md
+          echo "" >> release-notes.md
+          echo "### Commit History" >> release-notes.md
+          git log -10 --pretty=format:"- %h %s" >> release-notes.md
+          echo "" >> release-notes.md
+          echo "### Build Metrics" >> release-notes.md
+          echo "- **Node Environment:** v20" >> release-notes.md
+          echo "- **Architecture:** Windows x64" >> release-notes.md
+          echo "- **Core Dependencies:** Electron, React, Tailwind CSS v4" >> release-notes.md
+
+      - name: Publish to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          draft: false
+          prerelease: false
+          body_path: release-notes.md
+          files: |
+            release/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
