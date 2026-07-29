@@ -10,7 +10,7 @@ declare global {
       saveFilesBulk: (files: {name: string, buffer: ArrayBuffer}[]) => Promise<{success: boolean, outputPath?: string, error?: string}>;
       getAppVersion: () => Promise<string>;
       extractAudio: (inputPath: string) => Promise<{success: boolean, outputPath?: string, error?: string}>;
-      extractAudioBulk: (inputPath: string, outputFolder: string, fileName: string) => Promise<{success: boolean, error?: string}>;
+      extractAudioBulk: (inputPath: string, outputFolder: string, fileName: string, normalizeAudio?: boolean) => Promise<{success: boolean, error?: string}>;
       onExtractionProgress: (callback: (progress: number) => void) => void;
     };
   }

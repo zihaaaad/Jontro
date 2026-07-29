@@ -9,9 +9,10 @@ export default function VectorTracer() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [svgOutput, setSvgOutput] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [preset, setPreset] = useState('default');
+  const [preset, setPreset] = useState('ultra_perfect');
 
   const presets = [
+    { id: 'ultra_perfect', name: 'Ultra Perfect (Algorithm)' },
     { id: 'default', name: 'Default' },
     { id: 'posterized1', name: 'Posterized (Layered)' },
     { id: 'posterized2', name: 'Posterized (Simple)' },
@@ -47,13 +48,38 @@ export default function VectorTracer() {
     setIsProcessing(true);
     setSvgOutput(null);
 
-    // ImageTracer's browser API takes an image URL, a callback, and a preset/options object
     try {
+      let options: any = preset;
+      
+      // ALGORITHMIC UPGRADE: Ultra-Perfect Custom Engine Parameters
+      if (preset === 'ultra_perfect') {
+        options = {
+          colorsampling: 2, 
+          numberofcolors: 256, 
+          mincolorratio: 0, 
+          colorquantcycles: 5, 
+          blurradius: 0, 
+          blurdelta: 20,
+          strokewidth: 1, 
+          linefilter: false, 
+          scale: 1,
+          roundcoords: 2, 
+          viewbox: false, 
+          desc: false, 
+          lcpr: 0, 
+          qcpr: 0,
+          ltres: 0.1, 
+          qtres: 0.1, 
+          pathomit: 0, 
+          rightangleenhance: true
+        };
+      }
+
       ImageTracer.imageToSVG(previewUrl, (svgstr: string) => {
         setSvgOutput(svgstr);
         setIsProcessing(false);
         toast.success('Vectorization complete!');
-      }, preset);
+      }, options);
     } catch (e) {
       console.error(e);
       toast.error('Failed to vectorize image.');
