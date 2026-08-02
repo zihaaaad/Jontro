@@ -124,7 +124,7 @@ function App() {
         <div className="w-64 h-24 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] rounded-md p-3 flex flex-col justify-end overflow-hidden shadow-inner">
           {bootLogs.map((log, i) => (
             <div key={i} className="text-[10px] font-mono text-zinc-500 dark:text-[#737373] animate-in slide-in-from-bottom-2 fade-in duration-200 leading-tight">
-              > {log}
+              &gt; {log}
             </div>
           ))}
         </div>
