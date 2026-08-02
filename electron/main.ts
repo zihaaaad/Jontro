@@ -1,6 +1,20 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import path from 'path';
+import os from 'os';
 import { autoUpdater } from 'electron-updater';
+
+let lastCpuTimes = getCpuTimes();
+function getCpuTimes() {
+  const cpus = os.cpus();
+  let idle = 0, total = 0;
+  cpus.forEach(core => {
+    for (let type in core.times) {
+      total += core.times[type as keyof typeof core.times];
+    }
+    idle += core.times.idle;
+  });
+  return { idle, total };
+}
 
 // The built directory structure
 //
@@ -61,6 +75,22 @@ app.whenReady().then(() => {
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
+
+  // Telemetry Stream
+  setInterval(() => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      const memUsed = ((os.totalmem() - os.freemem()) / (1024 ** 3)).toFixed(1);
+      const memTotal = (os.totalmem() / (1024 ** 3)).toFixed(1);
+      
+      const currentCpu = getCpuTimes();
+      const idleDiff = currentCpu.idle - lastCpuTimes.idle;
+      const totalDiff = currentCpu.total - lastCpuTimes.total;
+      const cpuUsage = totalDiff === 0 ? 0 : (100 - (100 * idleDiff / totalDiff)).toFixed(0);
+      lastCpuTimes = currentCpu;
+
+      mainWindow.webContents.send('system:telemetry', { cpu: cpuUsage, ram: memUsed, ramTotal: memTotal });
+    }
+  }, 2000);
 });
 
 ipcMain.handle('updater:quitAndInstall', () => {

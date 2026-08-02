@@ -11,6 +11,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   // App Info
   getAppVersion: () => ipcRenderer.invoke('system:getAppVersion'),
+  onSystemTelemetry: (callback: (data: any) => void) => {
+    ipcRenderer.removeAllListeners('system:telemetry');
+    ipcRenderer.on('system:telemetry', (_event, data) => callback(data));
+  },
   
   // Media
   extractAudio: (inputPath: string) => ipcRenderer.invoke('media:extractAudio', inputPath),

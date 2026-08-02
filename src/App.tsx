@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 
   FileAudio, Image as ImageIcon, Files, ScanText, ListTodo, KeyRound,
-  ChevronRight, LayoutDashboard, Sun, Moon
+  ChevronRight, LayoutDashboard, Sun, Moon, Search, Cpu, Activity
 } from 'lucide-react';
 import VideoConverter from './tools/VideoConverter';
 import TodoList from './tools/TodoList';
@@ -18,6 +18,11 @@ import pkg from '../package.json';
 function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [isBooting, setIsBooting] = useState(true);
+  const [bootLogs, setBootLogs] = useState<string[]>([]);
+  const [telemetry, setTelemetry] = useState({ cpu: '0', ram: '0', ramTotal: '0' });
+  const [showPalette, setShowPalette] = useState(false);
+  const [paletteQuery, setPaletteQuery] = useState('');
+  
   const [isDark, setIsDark] = useState(() => {
     const saved = localStorage.getItem('jontro-theme');
     if (saved) return saved === 'dark';
@@ -25,8 +30,27 @@ function App() {
   });
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsBooting(false), 800);
-    return () => clearTimeout(timer);
+    const logs = [
+      "Initializing core modules...",
+      "Mounting native OS bindings...",
+      "Verifying cryptography hashes...",
+      "Loading hardware acceleration...",
+      "Waking WebAssembly engines...",
+      "System ready."
+    ];
+    let i = 0;
+    const interval = setInterval(() => {
+      setBootLogs(prev => {
+        const next = [...prev, logs[i]];
+        return next.length > 4 ? next.slice(next.length - 4) : next;
+      });
+      i++;
+      if (i >= logs.length) {
+        clearInterval(interval);
+        setTimeout(() => setIsBooting(false), 500);
+      }
+    }, 250);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -38,6 +62,22 @@ function App() {
       localStorage.setItem('jontro-theme', 'light');
     }
   }, [isDark]);
+
+  useEffect(() => {
+    if (window.electronAPI && window.electronAPI.onSystemTelemetry) {
+      window.electronAPI.onSystemTelemetry((data) => setTelemetry(data));
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setShowPalette(p => !p);
+      }
+      if (e.key === 'Escape') setShowPalette(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     if (window.electronAPI && window.electronAPI.onUpdateAvailable) {
@@ -75,12 +115,19 @@ function App() {
   if (isBooting) {
     return (
       <div className="flex h-screen bg-zinc-100 dark:bg-[#0e0e0e] items-center justify-center flex-col">
-        <div className="w-20 h-20 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] rounded-2xl flex items-center justify-center mb-6 shadow-2xl relative overflow-hidden">
-          <span className="text-zinc-900 dark:text-[#ededed] font-bold text-4xl font-sans tracking-tighter animate-pulse">J</span>
+        <div className="w-20 h-20 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] rounded-2xl flex items-center justify-center mb-6 shadow-2xl relative overflow-hidden group">
+          <span className="text-zinc-900 dark:text-[#ededed] font-bold text-4xl font-sans tracking-tighter">J</span>
           <div className="absolute inset-0 border-2 border-transparent border-t-blue-500 rounded-2xl animate-[spin_2s_linear_infinite] opacity-50"></div>
         </div>
-        <h1 className="text-sm font-semibold text-zinc-900 dark:text-[#ededed] tracking-[0.2em] mb-2">JONTRO</h1>
-        <p className="text-[10px] text-zinc-500 dark:text-[#737373] uppercase tracking-widest font-medium">Initializing Environment</p>
+        <h1 className="text-sm font-semibold text-zinc-900 dark:text-[#ededed] tracking-[0.2em] mb-4">JONTRO</h1>
+        
+        <div className="w-64 h-24 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] rounded-md p-3 flex flex-col justify-end overflow-hidden shadow-inner">
+          {bootLogs.map((log, i) => (
+            <div key={i} className="text-[10px] font-mono text-zinc-500 dark:text-[#737373] animate-in slide-in-from-bottom-2 fade-in duration-200 leading-tight">
+              > {log}
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -155,11 +202,24 @@ function App() {
         </div>
         
         {/* Footer */}
-        <div className="px-5 py-4 border-t border-zinc-200 dark:border-[#262626] flex items-center justify-center md:justify-between text-xs text-zinc-500 dark:text-[#737373]">
-          <span className="hidden md:block">v{pkg.version}</span>
-          <div className="flex items-center">
-            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 md:mr-2"></div>
-            <span className="hidden md:block">Online</span>
+        <div className="px-5 py-4 border-t border-zinc-200 dark:border-[#262626] flex flex-col gap-2 text-xs text-zinc-500 dark:text-[#737373]">
+          <div className="hidden md:flex items-center justify-between">
+            <span className="font-semibold text-zinc-900 dark:text-[#a3a3a3]">v{pkg.version}</span>
+            <div className="flex items-center">
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-2 animate-pulse"></div>
+              <span>Online</span>
+            </div>
+          </div>
+          
+          <div className="hidden md:flex flex-col gap-1 mt-2 p-2 bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-200 dark:border-[#262626] rounded">
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1.5"><Cpu size={10} /> CPU</span>
+              <span className="font-mono text-[10px] text-zinc-900 dark:text-[#ededed]">{telemetry.cpu}%</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1.5"><Activity size={10} /> RAM</span>
+              <span className="font-mono text-[10px] text-zinc-900 dark:text-[#ededed]">{telemetry.ram} GB</span>
+            </div>
           </div>
         </div>
       </div>
@@ -198,6 +258,46 @@ function App() {
           </div>
         </div>
       </div>
+
+      {/* Command Palette Overlay */}
+      {showPalette && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] bg-zinc-900/50 dark:bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={(e) => { if (e.target === e.currentTarget) setShowPalette(false); }}>
+          <div className="w-full max-w-lg bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col">
+            <div className="flex items-center px-4 py-3 border-b border-zinc-200 dark:border-[#262626]">
+              <Search size={18} className="text-zinc-400 dark:text-[#737373] mr-3" />
+              <input 
+                autoFocus
+                type="text" 
+                placeholder="Search tools... (e.g., ocr, video)"
+                value={paletteQuery}
+                onChange={e => setPaletteQuery(e.target.value)}
+                className="flex-1 bg-transparent border-none text-zinc-900 dark:text-[#ededed] text-sm focus:outline-none placeholder-zinc-400 dark:placeholder-[#737373]"
+              />
+              <div className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-[#262626] text-[10px] text-zinc-500 dark:text-[#a3a3a3] font-medium border border-zinc-200 dark:border-[#404040]">ESC</div>
+            </div>
+            
+            <div className="max-h-[60vh] overflow-y-auto p-2 custom-scrollbar">
+              {[{ id: 'home', name: 'Home Dashboard', icon: LayoutDashboard }, ...tools]
+                .filter(t => t.name.toLowerCase().includes(paletteQuery.toLowerCase()))
+                .map(tool => {
+                  const Icon = tool.icon;
+                  return (
+                    <button
+                      key={tool.id}
+                      onClick={() => { setActiveTab(tool.id); setShowPalette(false); setPaletteQuery(''); }}
+                      className="w-full flex items-center px-3 py-3 rounded-lg hover:bg-zinc-100 dark:hover:bg-[#262626] group transition-all duration-200 text-left active:scale-[0.98]"
+                    >
+                      <div className="w-8 h-8 rounded-md bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-200 dark:border-[#262626] flex items-center justify-center mr-3 group-hover:border-zinc-300 dark:group-hover:border-[#404040] transition-colors">
+                        <Icon size={14} className="text-zinc-500 dark:text-[#737373] group-hover:text-zinc-900 dark:group-hover:text-[#ededed]" />
+                      </div>
+                      <span className="text-sm font-medium text-zinc-700 dark:text-[#a3a3a3] group-hover:text-zinc-900 dark:group-hover:text-[#ededed] transition-colors">{tool.name}</span>
+                    </button>
+                  )
+                })}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -9,6 +9,7 @@ declare global {
       saveBuffer: (buffer: ArrayBuffer, defaultName: string) => Promise<{success: boolean, outputPath?: string, error?: string}>;
       saveFilesBulk: (files: {name: string, buffer: ArrayBuffer}[]) => Promise<{success: boolean, outputPath?: string, error?: string}>;
       getAppVersion: () => Promise<string>;
+      onSystemTelemetry: (callback: (data: {cpu: string, ram: string, ramTotal: string}) => void) => void;
       extractAudio: (inputPath: string) => Promise<{success: boolean, outputPath?: string, error?: string}>;
       extractAudioBulk: (inputPath: string, outputFolder: string, fileName: string, normalizeAudio?: boolean) => Promise<{success: boolean, error?: string}>;
       onExtractionProgress: (callback: (progress: number) => void) => void;
