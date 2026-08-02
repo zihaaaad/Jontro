@@ -33,9 +33,9 @@ Jontro has transitioned from a Python/PyQt5 script into a modern, enterprise-gra
 *   **Function:** Combine multiple PDF documents into one, or extract specific pages from a large PDF.
 *   **Technology:** Uses `pdf-lib` to manipulate PDF buffers directly in memory.
 
-### 4. Screenshot & OCR (Optical Character Recognition)
-*   **Function:** Allows users to select an area of their screen and instantly extract any text present in the image.
-*   **Technology:** Uses `tesseract.js` (WebAssembly OCR) to read text locally without sending data to the cloud.
+### 4. Screenshot, PDF & OCR Scanner
+*   **Function:** Allows users to select an area of their screen or upload multi-page PDFs to instantly extract any text present. It is highly optimized for bilingual scanning (English and Bengali).
+*   **Technology:** Uses `tesseract.js` (WebAssembly OCR) and `pdfjs-dist` to read text locally without sending data to the cloud. Features custom image upscaling and contrast stretching.
 
 ### 5. To-Do List Manager
 *   **Function:** A clean, persistent task tracker for daily workflows.
@@ -44,6 +44,14 @@ Jontro has transitioned from a Python/PyQt5 script into a modern, enterprise-gra
 ### 6. Password Generator
 *   **Function:** Creates cryptographically secure, random passwords based on user-defined parameters (length, symbols, numbers).
 *   **Technology:** Native JavaScript Crypto API (`window.crypto.getRandomValues`).
+
+### 7. Vector Tracer
+*   **Function:** Converts raster images (PNG, JPG) into highly accurate, scalable SVGs using custom tracing presets.
+*   **Technology:** Uses `imagetracerjs` to generate algorithmic vectors locally.
+
+### 8. QR Studio
+*   **Function:** Generates customizable, high-resolution QR codes that support center logo uploading and background excavation.
+*   **Technology:** Uses `qrcode.react` generating native SVGs and PNGs.
 
 ##  Future Roadmap
 Because of the highly modular React architecture, Jontro can easily expand to include:

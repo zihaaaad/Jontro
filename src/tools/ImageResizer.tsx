@@ -32,27 +32,55 @@ export default function ImageResizer() {
     };
   }, [previewUrl]);
 
+  const processFile = (file: File) => {
+    setSelectedFile(file);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    const img = new Image();
+    img.onload = () => {
+      setWidth(img.width.toString());
+      setHeight(img.height.toString());
+      setOriginalAspect(img.width / img.height);
+    };
+    img.src = url;
+  };
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      setSelectedFile(file);
-      
-      // Cleanup previous preview if it exists
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-      
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
-      
-      // Load image to read its native dimensions
-      const img = new Image();
-      img.onload = () => {
-        setWidth(img.width.toString());
-        setHeight(img.height.toString());
-        setOriginalAspect(img.width / img.height);
-      };
-      img.src = url;
+      processFile(e.target.files[0]);
     }
   };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      if (file.type.startsWith('image/')) {
+        processFile(file);
+      } else {
+        toast.error('Please drop a valid image file.');
+      }
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') clearImage();
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        document.getElementById('export-img-btn')?.click();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const clearImage = () => {
     setSelectedFile(null);
@@ -182,13 +210,13 @@ export default function ImageResizer() {
               />
               <button 
                 onClick={clearImage}
-                className="absolute top-4 right-4 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg transition-none"
-                title="Clear Image"
+                className="absolute top-4 right-4 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg transition-all duration-200 hover:scale-110 active:scale-95"
+                title="Clear Image (Esc)"
               >
                 <X size={16} />
               </button>
               
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 bg-white/90 dark:bg-[#141414]/90 backdrop-blur px-4 py-2 rounded-full shadow-lg border border-zinc-200 dark:border-[#262626] flex items-center gap-3">
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 bg-white/70 dark:bg-black/70 backdrop-blur-md px-5 py-2.5 rounded-full shadow-lg border border-white/20 dark:border-white/10 flex items-center gap-4 transition-all">
                 <span className="text-xs font-medium text-zinc-700 dark:text-[#a3a3a3]">Zoom</span>
                 <input
                   type="range"
@@ -203,12 +231,16 @@ export default function ImageResizer() {
               </div>
             </div>
           ) : (
-            <label className="flex-1 m-8 border border-dashed border-zinc-300 dark:border-[#404040] hover:border-zinc-400 dark:hover:border-[#737373] bg-zinc-50 dark:bg-[#0e0e0e] rounded-md flex flex-col items-center justify-center p-6 cursor-pointer transition-none">
-              <UploadCloud size={32} strokeWidth={1.5} className="text-zinc-500 dark:text-[#737373] mb-4" />
+            <label 
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              className="flex-1 m-8 border border-dashed border-zinc-300 dark:border-[#404040] hover:border-zinc-400 dark:hover:border-[#737373] bg-zinc-50 hover:bg-zinc-100 dark:bg-[#0e0e0e] dark:hover:bg-[#1a1a1a] rounded-md flex flex-col items-center justify-center p-6 cursor-pointer transition-all duration-200"
+            >
+              <UploadCloud size={32} strokeWidth={1.5} className="text-zinc-500 dark:text-[#737373] mb-4 transition-transform duration-300 hover:scale-110" />
               <span className="text-sm font-medium text-zinc-900 dark:text-[#ededed] mb-1 text-center">
-                Drag image here
+                Drag image here or click to browse
               </span>
-              <span className="text-xs text-zinc-500 dark:text-[#737373] text-center">
+              <span className="text-xs text-zinc-500 dark:text-[#737373] text-center mt-2">
                 PNG, JPG, WEBP
               </span>
               <input type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
@@ -274,13 +306,15 @@ export default function ImageResizer() {
           </div>
 
           <button 
+            id="export-img-btn"
             onClick={handleExport}
             disabled={!selectedFile || isExporting}
-            className={`w-full mt-6 py-2 rounded-md text-sm font-medium transition-none flex items-center justify-center ${
+            className={`w-full mt-6 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center justify-center ${
               !selectedFile || isExporting
                 ? 'bg-zinc-100 dark:bg-[#262626] text-zinc-500 dark:text-[#737373] cursor-not-allowed'
-                : 'bg-zinc-900 hover:bg-zinc-800 dark:bg-[#ededed] dark:hover:bg-white text-white dark:text-[#0e0e0e]'
+                : 'bg-zinc-900 hover:bg-zinc-800 dark:bg-[#ededed] dark:hover:bg-white text-white dark:text-[#0e0e0e] hover:scale-[1.02] active:scale-[0.98]'
             }`}
+            title="Export Image (Ctrl+S)"
           >
             <Download size={16} className="mr-2" /> 
             {isExporting ? 'Exporting...' : 'Export Image'}

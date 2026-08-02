@@ -27,6 +27,37 @@ export default function PdfTools() {
     }
   };
 
+  const handleMergeDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const files = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
+      if (files.length > 0) {
+        setMergeFiles(prev => [...prev, ...files]);
+      } else {
+        toast.error('Please drop valid PDF files.');
+      }
+    }
+  };
+
+  const handleSplitDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+        setSplitFile(file);
+      } else {
+        toast.error('Please drop a valid PDF file.');
+      }
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   const removeMergeFile = (index: number) => {
     setMergeFiles(prev => prev.filter((_, i) => i !== index));
   };
@@ -223,10 +254,10 @@ export default function PdfTools() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div 
             onClick={() => setActiveTool('merge')}
-            className="bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] hover:border-zinc-400 dark:hover:border-[#404040] rounded-md p-6 cursor-pointer group transition-none"
+            className="bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] hover:border-zinc-400 dark:hover:border-[#404040] rounded-md p-6 cursor-pointer group transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
           >
-            <div className="w-10 h-10 bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-200 dark:border-[#262626] rounded-md flex items-center justify-center mb-4">
-              <Merge size={18} className="text-zinc-500 dark:text-[#a3a3a3] group-hover:text-zinc-900 dark:group-hover:text-[#ededed]" />
+            <div className="w-10 h-10 bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-200 dark:border-[#262626] rounded-md flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110">
+              <Merge size={18} className="text-zinc-500 dark:text-[#a3a3a3] group-hover:text-zinc-900 dark:group-hover:text-[#ededed] transition-colors" />
             </div>
             <h3 className="text-base font-medium text-zinc-900 dark:text-[#ededed] mb-1">Merge PDFs</h3>
             <p className="text-xs text-zinc-500 dark:text-[#737373] leading-relaxed">Combine multiple independent PDF files sequentially into a single document.</p>
@@ -234,10 +265,10 @@ export default function PdfTools() {
 
           <div 
             onClick={() => setActiveTool('split')}
-            className="bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] hover:border-zinc-400 dark:hover:border-[#404040] rounded-md p-6 cursor-pointer group transition-none"
+            className="bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] hover:border-zinc-400 dark:hover:border-[#404040] rounded-md p-6 cursor-pointer group transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
           >
-            <div className="w-10 h-10 bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-200 dark:border-[#262626] rounded-md flex items-center justify-center mb-4">
-              <SplitSquareHorizontal size={18} className="text-zinc-500 dark:text-[#a3a3a3] group-hover:text-zinc-900 dark:group-hover:text-[#ededed]" />
+            <div className="w-10 h-10 bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-200 dark:border-[#262626] rounded-md flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110">
+              <SplitSquareHorizontal size={18} className="text-zinc-500 dark:text-[#a3a3a3] group-hover:text-zinc-900 dark:group-hover:text-[#ededed] transition-colors" />
             </div>
             <h3 className="text-base font-medium text-zinc-900 dark:text-[#ededed] mb-1">Split PDF</h3>
             <p className="text-xs text-zinc-500 dark:text-[#737373] leading-relaxed">Extract specific pages or chunk a large PDF into multiple smaller files.</p>
@@ -245,10 +276,10 @@ export default function PdfTools() {
 
           <div 
             onClick={() => setActiveTool('to-image')}
-            className="bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] hover:border-zinc-400 dark:hover:border-[#404040] rounded-md p-6 cursor-pointer group transition-none"
+            className="bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] hover:border-zinc-400 dark:hover:border-[#404040] rounded-md p-6 cursor-pointer group transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
           >
-            <div className="w-10 h-10 bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-200 dark:border-[#262626] rounded-md flex items-center justify-center mb-4">
-              <ImageIcon size={18} className="text-zinc-500 dark:text-[#a3a3a3] group-hover:text-zinc-900 dark:group-hover:text-[#ededed]" />
+            <div className="w-10 h-10 bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-200 dark:border-[#262626] rounded-md flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110">
+              <ImageIcon size={18} className="text-zinc-500 dark:text-[#a3a3a3] group-hover:text-zinc-900 dark:group-hover:text-[#ededed] transition-colors" />
             </div>
             <h3 className="text-base font-medium text-zinc-900 dark:text-[#ededed] mb-1">PDF to Images</h3>
             <p className="text-xs text-zinc-500 dark:text-[#737373] leading-relaxed">Rasterize each page of your PDF into high-quality PNG images.</p>
@@ -259,10 +290,14 @@ export default function PdfTools() {
       {/* MERGE UI */}
       {activeTool === 'merge' && (
         <div className="bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] rounded-md p-8">
-          <label className="border border-dashed border-zinc-300 dark:border-[#404040] hover:border-zinc-400 dark:hover:border-[#737373] bg-zinc-50 dark:bg-[#0e0e0e] rounded-md flex flex-col items-center justify-center p-8 cursor-pointer transition-none mb-6">
-            <FilePlus size={32} strokeWidth={1.5} className="text-zinc-500 dark:text-[#737373] mb-4" />
+          <label 
+            onDrop={handleMergeDrop}
+            onDragOver={handleDragOver}
+            className="border border-dashed border-zinc-300 dark:border-[#404040] hover:border-zinc-400 dark:hover:border-[#737373] bg-zinc-50 hover:bg-zinc-100 dark:bg-[#0e0e0e] dark:hover:bg-[#1a1a1a] rounded-md flex flex-col items-center justify-center p-8 cursor-pointer transition-all duration-200 mb-6"
+          >
+            <FilePlus size={32} strokeWidth={1.5} className="text-zinc-500 dark:text-[#737373] mb-4 transition-transform duration-300 hover:scale-110" />
             <span className="text-sm font-medium text-zinc-900 dark:text-[#ededed] mb-1">
-              Add PDF Files
+              Drag PDFs here or browse
             </span>
             <span className="text-xs text-zinc-500 dark:text-[#737373]">
               Select multiple files to combine
@@ -298,10 +333,10 @@ export default function PdfTools() {
             <button 
               onClick={executeMerge}
               disabled={mergeFiles.length < 2 || isProcessing}
-              className={`px-5 py-2 rounded-md text-sm font-medium transition-none flex items-center ${
+              className={`px-5 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center ${
                 mergeFiles.length < 2 || isProcessing
                   ? 'bg-zinc-100 dark:bg-[#262626] text-zinc-500 dark:text-[#737373] cursor-not-allowed'
-                  : 'bg-zinc-900 hover:bg-zinc-800 dark:bg-[#ededed] dark:hover:bg-white text-white dark:text-[#0e0e0e]'
+                  : 'bg-zinc-900 hover:bg-zinc-800 dark:bg-[#ededed] dark:hover:bg-white text-white dark:text-[#0e0e0e] hover:scale-[1.02] active:scale-[0.98]'
               }`}
             >
               {isProcessing ? 'Merging...' : 'Merge & Export'}
@@ -330,10 +365,14 @@ export default function PdfTools() {
                 </button>
               </div>
             ) : (
-              <label className="flex-1 m-8 border border-dashed border-zinc-300 dark:border-[#404040] hover:border-zinc-400 dark:hover:border-[#737373] bg-zinc-50 dark:bg-[#0e0e0e] rounded-md flex flex-col items-center justify-center p-6 cursor-pointer transition-none">
-                <FileText size={32} strokeWidth={1.5} className="text-zinc-500 dark:text-[#737373] mb-4" />
+              <label 
+                onDrop={handleSplitDrop}
+                onDragOver={handleDragOver}
+                className="flex-1 m-8 border border-dashed border-zinc-300 dark:border-[#404040] hover:border-zinc-400 dark:hover:border-[#737373] bg-zinc-50 hover:bg-zinc-100 dark:bg-[#0e0e0e] dark:hover:bg-[#1a1a1a] rounded-md flex flex-col items-center justify-center p-6 cursor-pointer transition-all duration-200"
+              >
+                <FileText size={32} strokeWidth={1.5} className="text-zinc-500 dark:text-[#737373] mb-4 transition-transform duration-300 hover:scale-110" />
                 <span className="text-sm font-medium text-zinc-900 dark:text-[#ededed] mb-1 text-center">
-                  Select PDF to Split
+                  Drag PDF here to Split
                 </span>
                 <span className="text-xs text-zinc-500 dark:text-[#737373] text-center">
                   Only .pdf files supported
@@ -367,10 +406,10 @@ export default function PdfTools() {
             <button 
               onClick={executeSplit}
               disabled={!splitFile || !splitRange || isProcessing}
-              className={`w-full mt-6 py-2 rounded-md text-sm font-medium transition-none flex items-center justify-center ${
+              className={`w-full mt-6 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center justify-center ${
                 !splitFile || !splitRange || isProcessing
                   ? 'bg-zinc-100 dark:bg-[#262626] text-zinc-500 dark:text-[#737373] cursor-not-allowed'
-                  : 'bg-zinc-900 hover:bg-zinc-800 dark:bg-[#ededed] dark:hover:bg-white text-white dark:text-[#0e0e0e]'
+                  : 'bg-zinc-900 hover:bg-zinc-800 dark:bg-[#ededed] dark:hover:bg-white text-white dark:text-[#0e0e0e] hover:scale-[1.02] active:scale-[0.98]'
               }`}
             >
               <Download size={16} className="mr-2" /> 
@@ -400,10 +439,14 @@ export default function PdfTools() {
                 </button>
               </div>
             ) : (
-              <label className="flex-1 m-8 border border-dashed border-zinc-300 dark:border-[#404040] hover:border-zinc-400 dark:hover:border-[#737373] bg-zinc-50 dark:bg-[#0e0e0e] rounded-md flex flex-col items-center justify-center p-6 cursor-pointer transition-none">
-                <FileText size={32} strokeWidth={1.5} className="text-zinc-500 dark:text-[#737373] mb-4" />
+              <label 
+                onDrop={handleSplitDrop}
+                onDragOver={handleDragOver}
+                className="flex-1 m-8 border border-dashed border-zinc-300 dark:border-[#404040] hover:border-zinc-400 dark:hover:border-[#737373] bg-zinc-50 hover:bg-zinc-100 dark:bg-[#0e0e0e] dark:hover:bg-[#1a1a1a] rounded-md flex flex-col items-center justify-center p-6 cursor-pointer transition-all duration-200"
+              >
+                <FileText size={32} strokeWidth={1.5} className="text-zinc-500 dark:text-[#737373] mb-4 transition-transform duration-300 hover:scale-110" />
                 <span className="text-sm font-medium text-zinc-900 dark:text-[#ededed] mb-1 text-center">
-                  Select PDF
+                  Drag PDF here
                 </span>
                 <span className="text-xs text-zinc-500 dark:text-[#737373] text-center">
                   Only .pdf files supported
@@ -429,10 +472,10 @@ export default function PdfTools() {
             <button 
               onClick={executePdfToImage}
               disabled={!splitFile || isProcessing}
-              className={`w-full mt-6 py-2 rounded-md text-sm font-medium transition-none flex items-center justify-center ${
+              className={`w-full mt-6 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center justify-center ${
                 !splitFile || isProcessing
                   ? 'bg-zinc-100 dark:bg-[#262626] text-zinc-500 dark:text-[#737373] cursor-not-allowed'
-                  : 'bg-zinc-900 hover:bg-zinc-800 dark:bg-[#ededed] dark:hover:bg-white text-white dark:text-[#0e0e0e]'
+                  : 'bg-zinc-900 hover:bg-zinc-800 dark:bg-[#ededed] dark:hover:bg-white text-white dark:text-[#0e0e0e] hover:scale-[1.02] active:scale-[0.98]'
               }`}
             >
               <ImageIcon size={16} className="mr-2" /> 

@@ -31,6 +31,31 @@ export default function VideoConverter() {
     }
   };
 
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const files = Array.from(e.dataTransfer.files);
+      const videoFiles = files.filter(f => f.type.startsWith('video/') || f.name.match(/\.(mp4|mkv|avi|mov|wmv|flv|webm)$/i));
+      
+      if (videoFiles.length > 0) {
+        const newFiles = videoFiles.map(f => ({ name: f.name, path: (f as any).path || f.name }));
+        setSelectedFiles(prev => [...prev, ...newFiles]);
+        setStatus('idle');
+        setProgress(0);
+        setCurrentFileIndex(0);
+      } else {
+        toast.error('Please drop valid video files.');
+      }
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   const removeFile = (indexToRemove: number) => {
     setSelectedFiles(prev => prev.filter((_, idx) => idx !== indexToRemove));
   };
@@ -103,9 +128,11 @@ export default function VideoConverter() {
         <div className="mb-6">
           <button 
             onClick={handleNativeFileSelect}
-            className="w-full border border-dashed rounded-md flex flex-col items-center justify-center py-12 px-6 cursor-pointer transition-none border-zinc-300 hover:border-zinc-400 bg-zinc-50 dark:border-[#404040] dark:hover:border-[#737373] dark:bg-[#0e0e0e]"
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            className="w-full border border-dashed rounded-md flex flex-col items-center justify-center py-12 px-6 cursor-pointer transition-all duration-200 border-zinc-300 hover:border-zinc-400 hover:bg-zinc-100 bg-zinc-50 dark:border-[#404040] dark:hover:border-[#737373] dark:bg-[#0e0e0e] dark:hover:bg-[#1a1a1a]"
           >
-            <UploadCloud size={32} strokeWidth={1.5} className="text-zinc-500 dark:text-[#737373] mb-4" />
+            <UploadCloud size={32} strokeWidth={1.5} className="text-zinc-500 dark:text-[#737373] mb-4 transition-transform duration-300 hover:scale-110" />
             <span className="text-sm font-medium text-zinc-900 dark:text-[#ededed] mb-1">
               Click to select multiple video files
             </span>
@@ -159,7 +186,7 @@ export default function VideoConverter() {
             
             <div className="w-full bg-zinc-200 dark:bg-[#262626] h-1 rounded-none overflow-hidden">
               <div 
-                className="h-1 bg-blue-500 transition-none"
+                className="h-1 bg-blue-500 transition-all duration-300 ease-out"
                 style={{ width: `${progress}%` }}
               ></div>
             </div>
@@ -172,7 +199,7 @@ export default function VideoConverter() {
               type="checkbox" 
               checked={normalizeAudio}
               onChange={(e) => setNormalizeAudio(e.target.checked)}
-              className="w-4 h-4 rounded-sm border border-zinc-300 dark:border-[#404040] bg-white dark:bg-[#0e0e0e] checked:bg-blue-500 checked:border-blue-500 appearance-none flex items-center justify-center before:content-[''] before:w-2 before:h-2 before:bg-white before:scale-0 checked:before:scale-100 before:transition-none"
+              className="w-4 h-4 rounded-sm border border-zinc-300 dark:border-[#404040] bg-white dark:bg-[#0e0e0e] checked:bg-blue-500 checked:border-blue-500 appearance-none flex items-center justify-center before:content-[''] before:w-2 before:h-2 before:bg-white before:scale-0 checked:before:scale-100 before:transition-transform before:duration-200"
             />
             <span className="ml-3 text-sm text-zinc-700 dark:text-[#ededed]">Apply EBU R128 Loudness Normalization</span>
           </label>
@@ -180,10 +207,10 @@ export default function VideoConverter() {
           <button 
             onClick={startConversion}
             disabled={selectedFiles.length === 0 || isConverting}
-            className={`px-5 py-2 rounded-md text-sm font-medium transition-none flex items-center ${
+            className={`px-5 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center ${
               selectedFiles.length === 0 || isConverting
                 ? 'bg-zinc-100 dark:bg-[#262626] text-zinc-500 dark:text-[#737373] cursor-not-allowed'
-                : 'bg-zinc-900 hover:bg-zinc-800 dark:bg-[#ededed] dark:hover:bg-white text-white dark:text-[#0e0e0e]'
+                : 'bg-zinc-900 hover:bg-zinc-800 dark:bg-[#ededed] dark:hover:bg-white text-white dark:text-[#0e0e0e] hover:scale-[1.02] active:scale-[0.98]'
             }`}
           >
             {isConverting ? 'Processing Queue...' : 'Start Bulk Extraction'}

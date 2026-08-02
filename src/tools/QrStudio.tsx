@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Download, Settings2, Link as LinkIcon, Image as ImageIcon } from 'lucide-react';
+import { Download, Settings2, Link as LinkIcon, Image as ImageIcon, UploadCloud, Trash2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { toast } from 'sonner';
 
@@ -9,8 +9,24 @@ export default function QrStudio() {
   const [fgColor, setFgColor] = useState('#000000');
   const [bgColor, setBgColor] = useState('#ffffff');
   const [level, setLevel] = useState<'L' | 'M' | 'Q' | 'H'>('H');
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [logoSize, setLogoSize] = useState(20);
+  const [excavate, setExcavate] = useState(true);
   
   const qrRef = useRef<HTMLDivElement>(null);
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      if (logoUrl) URL.revokeObjectURL(logoUrl);
+      const url = URL.createObjectURL(e.target.files[0]);
+      setLogoUrl(url);
+    }
+  };
+
+  const removeLogo = () => {
+    if (logoUrl) URL.revokeObjectURL(logoUrl);
+    setLogoUrl(null);
+  };
 
   const downloadQR = async (format: 'png' | 'svg') => {
     if (!qrRef.current) return;
@@ -98,6 +114,12 @@ export default function QrStudio() {
               bgColor={bgColor} 
               level={level}
               includeMargin={false}
+              imageSettings={logoUrl ? {
+                src: logoUrl,
+                height: (Math.min(size, 300) * logoSize) / 100,
+                width: (Math.min(size, 300) * logoSize) / 100,
+                excavate: excavate,
+              } : undefined}
             />
           </div>
           
@@ -174,6 +196,58 @@ export default function QrStudio() {
                 <option value="Q">Quartile (~25% recovery)</option>
                 <option value="H">High (~30% recovery)</option>
               </select>
+            </div>
+            
+            <div className="pt-4 border-t border-zinc-200 dark:border-[#262626]">
+              <label className="block text-xs font-semibold text-zinc-900 dark:text-[#ededed] mb-3">Custom Logo</label>
+              
+              {!logoUrl ? (
+                <label className="border border-dashed border-zinc-300 dark:border-[#404040] hover:border-zinc-400 dark:hover:border-[#737373] bg-zinc-50 dark:bg-[#0e0e0e] rounded-md flex flex-col items-center justify-center p-4 cursor-pointer transition-none">
+                  <UploadCloud size={16} className="text-zinc-500 dark:text-[#737373] mb-2" />
+                  <span className="text-xs font-medium text-zinc-900 dark:text-[#ededed]">Upload Logo</span>
+                  <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+                </label>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-200 dark:border-[#262626] p-2 rounded-md">
+                    <div className="flex items-center">
+                      <img src={logoUrl} alt="Logo" className="w-6 h-6 object-contain mr-3 bg-white rounded-sm p-0.5" />
+                      <span className="text-xs text-zinc-700 dark:text-[#a3a3a3]">Logo Applied</span>
+                    </div>
+                    <button onClick={removeLogo} className="text-red-500 hover:text-red-600 p-1">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <label className="text-xs text-zinc-500 dark:text-[#a3a3a3]">Logo Size</label>
+                      <span className="text-xs text-zinc-900 dark:text-[#ededed]">{logoSize}%</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="10" 
+                      max="30" 
+                      value={logoSize} 
+                      onChange={(e) => setLogoSize(Number(e.target.value))}
+                      className="w-full accent-zinc-900 dark:accent-zinc-400" 
+                    />
+                  </div>
+                  
+                  <label className="flex items-center cursor-pointer group" onClick={() => setExcavate(!excavate)}>
+                    <div className={`w-4 h-4 rounded-sm border mr-2 flex items-center justify-center transition-none ${
+                      excavate 
+                        ? 'bg-zinc-900 dark:bg-[#ededed] border-zinc-900 dark:border-[#ededed] text-white dark:text-zinc-900' 
+                        : 'bg-zinc-50 dark:bg-[#0e0e0e] border-zinc-300 dark:border-[#404040]'
+                    }`}>
+                      {excavate && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-3 h-3"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                    </div>
+                    <span className="text-xs text-zinc-700 dark:text-[#a3a3a3] group-hover:text-zinc-900 dark:group-hover:text-[#ededed]">
+                      Clear background behind logo
+                    </span>
+                  </label>
+                </div>
+              )}
             </div>
           </div>
 

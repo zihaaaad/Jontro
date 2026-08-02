@@ -2,6 +2,11 @@ import { useState, useEffect } from 'react';
 import { Languages, Copy, CheckCircle2, UploadCloud, ClipboardPaste, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import Tesseract from 'tesseract.js';
+import * as pdfjsLib from 'pdfjs-dist';
+// @ts-ignore
+import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 export default function OcrTool() {
   const [extractedText, setExtractedText] = useState("");
@@ -9,6 +14,7 @@ export default function OcrTool() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [language, setLanguage] = useState('ben+eng');
 
   // Listen for Clipboard Paste events natively
   useEffect(() => {
@@ -46,7 +52,63 @@ export default function OcrTool() {
     setProgress(0);
     
     try {
-      // ADVANCED ALGORITHM: Binarization & Contrast Stretch Pre-processing
+      if (file.type === 'application/pdf') {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) } as any).promise;
+        let allText = "";
+        
+        for (let i = 1; i <= pdf.numPages; i++) {
+          setProgress(((i - 1) / pdf.numPages) * 100);
+          const page = await pdf.getPage(i);
+          const viewport = page.getViewport({ scale: 2.0 }); // 2x upscale for better OCR
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) continue;
+          
+          await page.render({ canvasContext: ctx, viewport } as any).promise;
+          
+          // Grayscale & Contrast stretching on PDF canvas
+          const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const data = imgData.data;
+          let minL = 255; let maxL = 0;
+          for (let j = 0; j < data.length; j += 4) {
+            const v = 0.2126 * data[j] + 0.7152 * data[j + 1] + 0.0722 * data[j + 2];
+            data[j] = data[j + 1] = data[j + 2] = v;
+            if (v < minL) minL = v;
+            if (v > maxL) maxL = v;
+          }
+          const range = maxL - minL;
+          if (range > 0) {
+            for (let j = 0; j < data.length; j += 4) {
+              data[j] = data[j + 1] = data[j + 2] = ((data[j] - minL) / range) * 255;
+            }
+          }
+          ctx.putImageData(imgData, 0, 0);
+          
+          const processedDataUrl = canvas.toDataURL('image/png');
+          const result = await Tesseract.recognize(processedDataUrl, language, {
+            logger: m => {
+              if (m.status === 'recognizing text') {
+                const pageBaseProgress = ((i - 1) / pdf.numPages) * 100;
+                const pageProgress = (m.progress * 100) / pdf.numPages;
+                setProgress(pageBaseProgress + pageProgress);
+              }
+            }
+          });
+          allText += result.data.text + "\n\n";
+        }
+        
+        if (!allText.trim()) {
+          toast.error("No text could be found in this PDF.");
+          setExtractedText("No text detected. Try another file.");
+        } else {
+          setExtractedText(allText.trim());
+          toast.success("PDF text extracted successfully!");
+        }
+      } else {
+        // ADVANCED ALGORITHM: Upscaling & Contrast Stretching Pre-processing for Tesseract LSTM
       const img = new Image();
       await new Promise((resolve, reject) => {
         img.onload = resolve;
@@ -54,45 +116,65 @@ export default function OcrTool() {
         img.src = url;
       });
       
+      const scale = 2; // Upscale for better OCR accuracy on small screenshots
       const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        ctx.drawImage(img, 0, 0);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
         const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const data = imgData.data;
-        // Apply Otsu's inspired thresholding for Binarization
+        
+        // Find min and max luminance for contrast stretching
+        let minL = 255;
+        let maxL = 0;
+        
+        // Pass 1: Convert to grayscale and find min/max
         for (let i = 0; i < data.length; i += 4) {
           const r = data[i], g = data[i + 1], b = data[i + 2];
-          // Luminance calculation
-          const v = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-          // Threshold mapping
-          const t = v >= 128 ? 255 : 0;
-          data[i] = data[i + 1] = data[i + 2] = t;
+          const v = 0.2126 * r + 0.7152 * g + 0.0722 * b; // Luminance
+          data[i] = data[i + 1] = data[i + 2] = v;
+          if (v < minL) minL = v;
+          if (v > maxL) maxL = v;
         }
-        ctx.putImageData(imgData, 0, 0);
-      }
-      
-      const processedDataUrl = canvas.toDataURL('image/png');
-      
-      const result = await Tesseract.recognize(processedDataUrl, 'eng+ben', {
-        logger: m => {
-          if (m.status === 'recognizing text') {
-            setProgress(m.progress * 100);
+        
+        // Pass 2: Stretch contrast (normalization) to 0-255 range
+        const range = maxL - minL;
+        if (range > 0) {
+          for (let i = 0; i < data.length; i += 4) {
+            const v = data[i];
+            const stretched = ((v - minL) / range) * 255;
+            data[i] = data[i + 1] = data[i + 2] = stretched;
           }
         }
-      });
-      
-      if (!result.data.text.trim()) {
-        toast.error("No text could be found in this image.");
-        setExtractedText("No text detected. Try another image with clearer text.");
-      } else {
-        setExtractedText(result.data.text);
-        toast.success("Text extracted successfully!");
+        
+        ctx.putImageData(imgData, 0, 0);
+        
+        const processedDataUrl = canvas.toDataURL('image/png');
+        
+        const result = await Tesseract.recognize(processedDataUrl, language, {
+          logger: m => {
+            if (m.status === 'recognizing text') {
+              setProgress(m.progress * 100);
+            }
+          }
+        });
+        
+        if (!result.data.text.trim()) {
+          toast.error("No text could be found in this image.");
+          setExtractedText("No text detected. Try another image with clearer text.");
+        } else {
+          setExtractedText(result.data.text);
+          toast.success("Text extracted successfully!");
+        }
+      }
       }
     } catch (e) {
-      toast.error("Failed to extract text. Ensure the image is valid.");
+      toast.error("Failed to extract text. Ensure the file is valid.");
     } finally {
       setIsProcessing(false);
     }
@@ -142,8 +224,8 @@ export default function OcrTool() {
               
               <label className="border border-dashed border-zinc-300 dark:border-[#404040] hover:border-zinc-400 dark:hover:border-[#737373] bg-zinc-50 dark:bg-[#0e0e0e] rounded-md flex flex-col items-center justify-center p-6 cursor-pointer transition-none w-full max-w-xs">
                 <UploadCloud size={24} className="text-zinc-500 dark:text-[#737373] mb-3" />
-                <span className="text-sm font-medium text-zinc-900 dark:text-[#ededed]">Browse Image Files</span>
-                <input type="file" accept="image/*" className="hidden" onChange={handleFileUpload} />
+                <span className="text-sm font-medium text-zinc-900 dark:text-[#ededed]">Browse Image or PDF</span>
+                <input type="file" accept="image/*,application/pdf" className="hidden" onChange={handleFileUpload} />
               </label>
             </div>
           ) : (
@@ -176,9 +258,21 @@ export default function OcrTool() {
         {/* Right Side: Output */}
         <div className="bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] rounded-md p-6 flex flex-col relative">
           <div className="flex items-center justify-between mb-4 border-b border-zinc-200 dark:border-[#262626] pb-4">
-            <div className="flex items-center text-xs text-zinc-500 dark:text-[#737373]">
-              <Languages size={14} className="mr-2" />
-              Engine: <span className="text-zinc-900 dark:text-[#ededed] ml-1 font-medium">Tesseract v5 (ENG/BEN)</span>
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center text-xs text-zinc-500 dark:text-[#737373]">
+                <Languages size={14} className="mr-2" />
+                <span className="mr-2">Language:</span>
+                <select 
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  disabled={isProcessing}
+                  className="bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-300 dark:border-[#404040] rounded text-xs px-2 py-1 text-zinc-900 dark:text-[#ededed] focus:outline-none focus:border-blue-500 disabled:opacity-50"
+                >
+                  <option value="ben">Bengali (Best)</option>
+                  <option value="ben+eng">Bengali + English</option>
+                  <option value="eng">English Only</option>
+                </select>
+              </div>
             </div>
             <button 
               onClick={copyToClipboard}
