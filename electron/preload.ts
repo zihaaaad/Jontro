@@ -20,6 +20,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('media:extractAudio:progress', (_event, progress) => callback(progress));
   },
   
+  // Auto Updater
+  onUpdateAvailable: (callback: (version: string) => void) => {
+    ipcRenderer.removeAllListeners('updater:update-available');
+    ipcRenderer.on('updater:update-available', (_event, version) => callback(version));
+  },
+  onUpdateDownloaded: (callback: () => void) => {
+    ipcRenderer.removeAllListeners('updater:update-downloaded');
+    ipcRenderer.on('updater:update-downloaded', () => callback());
+  },
+  installUpdate: () => ipcRenderer.invoke('updater:quitAndInstall'),
+  
   // Native Notifications (Future use)
   sendNotification: (title: string, body: string) => {
     new Notification(title, { body });

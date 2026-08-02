@@ -12,7 +12,7 @@ import OcrTool from './tools/OcrTool';
 import QrStudio from './tools/QrStudio';
 import HomeDashboard from './tools/HomeDashboard';
 import VectorTracer from './tools/VectorTracer';
-import { Toaster } from 'sonner';
+import { Toaster, toast } from 'sonner';
 import pkg from '../package.json';
 
 function App() {
@@ -38,6 +38,28 @@ function App() {
       localStorage.setItem('jontro-theme', 'light');
     }
   }, [isDark]);
+
+  useEffect(() => {
+    if (window.electronAPI && window.electronAPI.onUpdateAvailable) {
+      window.electronAPI.onUpdateAvailable((version) => {
+        toast.info(`Version ${version} is downloading...`, {
+          description: "Jontro is automatically fetching the latest update in the background.",
+          duration: 10000,
+        });
+      });
+
+      window.electronAPI.onUpdateDownloaded(() => {
+        toast.success("Update Ready to Install!", {
+          description: "The new version has been downloaded successfully.",
+          duration: Infinity,
+          action: {
+            label: "Restart App",
+            onClick: () => window.electronAPI!.installUpdate()
+          }
+        });
+      });
+    }
+  }, []);
 
   const tools = [
     { id: 'video-converter', name: 'Video to Audio', icon: FileAudio },

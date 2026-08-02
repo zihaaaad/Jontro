@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import path from 'path';
+import { autoUpdater } from 'electron-updater';
 
 // The built directory structure
 //
@@ -41,9 +42,29 @@ const createWindow = () => {
 app.whenReady().then(() => {
   createWindow();
 
+  // Setup auto updater
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = true;
+  
+  if (app.isPackaged) {
+    autoUpdater.checkForUpdatesAndNotify();
+  }
+
+  autoUpdater.on('update-available', (info) => {
+    mainWindow?.webContents.send('updater:update-available', info.version);
+  });
+
+  autoUpdater.on('update-downloaded', () => {
+    mainWindow?.webContents.send('updater:update-downloaded');
+  });
+
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
+});
+
+ipcMain.handle('updater:quitAndInstall', () => {
+  autoUpdater.quitAndInstall();
 });
 
 app.on('window-all-closed', () => {

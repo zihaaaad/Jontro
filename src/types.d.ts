@@ -12,6 +12,11 @@ declare global {
       extractAudio: (inputPath: string) => Promise<{success: boolean, outputPath?: string, error?: string}>;
       extractAudioBulk: (inputPath: string, outputFolder: string, fileName: string, normalizeAudio?: boolean) => Promise<{success: boolean, error?: string}>;
       onExtractionProgress: (callback: (progress: number) => void) => void;
+      
+      // Auto Updater
+      onUpdateAvailable: (callback: (version: string) => void) => void;
+      onUpdateDownloaded: (callback: () => void) => void;
+      installUpdate: () => void;
     };
   }
 }
