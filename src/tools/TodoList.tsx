@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Trash2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
-interface Task { id: string; text: string; completed: boolean; }
+interface Task { id: string; text: string; completed: boolean; urgency?: number; }
 
 export default function TodoList() {
   const [tasks, setTasks] = useState<Task[]>(() => {
@@ -105,7 +105,7 @@ export default function TodoList() {
                       )}
                     </span>
                   </label>
-                  <button onClick={() => deleteTask(task.id)} className="ml-4 p-1.5 text-zinc-500 dark:text-[#737373] hover:text-red-500 dark:hover:text-[#ededed] opacity-0 group-hover:opacity-100 transition-none">
+                  <button onClick={() => deleteTask(task.id)} className="ml-4 p-1.5 text-zinc-500 dark:text-[#737373] hover:text-red-500 dark:hover:text-[#ededed] opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 active:scale-95">
                     <Trash2 size={14} />
                   </button>
                 </div>

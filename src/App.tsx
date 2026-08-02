@@ -20,7 +20,8 @@ function App() {
   const [isBooting, setIsBooting] = useState(true);
   const [isDark, setIsDark] = useState(() => {
     const saved = localStorage.getItem('jontro-theme');
-    return saved ? saved === 'dark' : true;
+    if (saved) return saved === 'dark';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
 
   useEffect(() => {
@@ -71,7 +72,7 @@ function App() {
       />
       
       {/* Sidebar */}
-      <div className="w-16 md:w-64 bg-white dark:bg-[#141414] border-r border-zinc-200 dark:border-[#262626] flex flex-col z-10 shrink-0 transition-none">
+      <div className="w-16 md:w-64 bg-white dark:bg-[#141414] border-r border-zinc-200 dark:border-[#262626] flex flex-col z-10 shrink-0 transition-all duration-300 ease-in-out">
         {/* App Header */}
         <div className="h-14 flex items-center justify-center md:justify-between px-0 md:px-5 border-b border-zinc-200 dark:border-[#262626]">
           <div className="flex items-center">
@@ -82,9 +83,9 @@ function App() {
           </div>
           <button 
             onClick={() => setIsDark(!isDark)}
-            className="hidden md:flex p-1.5 rounded-md text-zinc-500 hover:text-zinc-900 dark:text-[#737373] dark:hover:text-[#ededed] hover:bg-zinc-100 dark:hover:bg-[#262626] transition-none"
+            className="hidden md:flex p-1.5 rounded-md text-zinc-500 hover:text-zinc-900 dark:text-[#737373] dark:hover:text-[#ededed] hover:bg-zinc-100 dark:hover:bg-[#262626] transition-all duration-200 hover:scale-110 active:scale-95"
           >
-            {isDark ? <Sun size={14} /> : <Moon size={14} />}
+            {isDark ? <Sun size={14} className="animate-in fade-in spin-in-12" /> : <Moon size={14} className="animate-in fade-in spin-in-12" />}
           </button>
         </div>
         
@@ -98,7 +99,7 @@ function App() {
             <button
               onClick={() => setActiveTab('home')}
               title="Dashboard"
-              className={`w-full flex items-center justify-center md:justify-start px-3 py-3 md:py-2 rounded-md text-sm transition-none mb-4 ${
+              className={`w-full flex items-center justify-center md:justify-start px-3 py-3 md:py-2 rounded-md text-sm transition-all duration-200 hover:translate-x-1 mb-4 ${
                 activeTab === 'home' 
                   ? 'bg-zinc-100 text-zinc-900 dark:bg-[#262626] dark:text-[#ededed]' 
                   : 'hover:bg-zinc-50 text-zinc-600 hover:text-zinc-900 dark:hover:bg-[#1f1f1f] dark:text-[#a3a3a3] dark:hover:text-[#ededed]'
@@ -117,7 +118,7 @@ function App() {
                   key={tool.id}
                   onClick={() => setActiveTab(tool.id)}
                   title={tool.name}
-                  className={`w-full flex items-center justify-center md:justify-start px-3 py-3 md:py-2 rounded-md text-sm transition-none ${
+                  className={`w-full flex items-center justify-center md:justify-start px-3 py-3 md:py-2 rounded-md text-sm transition-all duration-200 hover:translate-x-1 ${
                     isActive 
                       ? 'bg-zinc-100 text-zinc-900 dark:bg-[#262626] dark:text-[#ededed]' 
                       : 'hover:bg-zinc-50 text-zinc-600 hover:text-zinc-900 dark:hover:bg-[#1f1f1f] dark:text-[#a3a3a3] dark:hover:text-[#ededed]'
@@ -154,9 +155,9 @@ function App() {
           </div>
           <button 
             onClick={() => setIsDark(!isDark)}
-            className="md:hidden flex p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:text-[#737373] dark:hover:text-[#ededed] bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] transition-none"
+            className="md:hidden flex p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:text-[#737373] dark:hover:text-[#ededed] bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] transition-all duration-200 active:scale-95"
           >
-            {isDark ? <Sun size={14} /> : <Moon size={14} />}
+            {isDark ? <Sun size={14} className="animate-in fade-in spin-in-12" /> : <Moon size={14} className="animate-in fade-in spin-in-12" />}
           </button>
         </div>
         

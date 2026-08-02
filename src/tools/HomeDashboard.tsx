@@ -44,7 +44,7 @@ export default function HomeDashboard({ onSelectTool }: HomeDashboardProps) {
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-3 py-1.5 text-xs font-medium rounded transition-none whitespace-nowrap ${
+              className={`px-3 py-1.5 text-xs font-medium rounded transition-all duration-200 whitespace-nowrap active:scale-95 ${
                 activeCategory === cat 
                   ? 'bg-zinc-100 text-zinc-900 dark:bg-[#262626] dark:text-[#ededed]' 
                   : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50 dark:text-[#737373] dark:hover:text-[#ededed] dark:hover:bg-[#1f1f1f]'
@@ -63,7 +63,7 @@ export default function HomeDashboard({ onSelectTool }: HomeDashboardProps) {
             <button
               key={tool.id}
               onClick={() => onSelectTool(tool.id)}
-              className="bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] hover:border-zinc-400 dark:hover:border-[#737373] hover:bg-zinc-50 dark:hover:bg-[#1a1a1a] rounded-md p-6 flex flex-col text-left transition-none group h-full"
+              className="bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] hover:border-zinc-400 dark:hover:border-[#737373] hover:bg-zinc-50 dark:hover:bg-[#1a1a1a] rounded-md p-6 flex flex-col text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-md group h-full"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="w-10 h-10 bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-200 dark:border-[#262626] rounded-md flex items-center justify-center group-hover:border-zinc-300 dark:group-hover:border-[#404040]">
@@ -80,7 +80,7 @@ export default function HomeDashboard({ onSelectTool }: HomeDashboardProps) {
         {filteredComingSoon.map((tool, idx) => {
           const Icon = tool.icon;
           return (
-            <div key={`soon-${idx}`} className="bg-zinc-50 dark:bg-[#0e0e0e] border border-dashed border-zinc-300 dark:border-[#262626] rounded-md p-6 flex flex-col text-left opacity-70 h-full relative overflow-hidden">
+            <div key={`soon-${idx}`} className="bg-zinc-50 dark:bg-[#0e0e0e] border border-dashed border-zinc-300 dark:border-[#262626] hover:border-zinc-400 dark:hover:border-[#404040] transition-colors duration-300 rounded-md p-6 flex flex-col text-left opacity-70 h-full relative overflow-hidden group">
               <div className="flex items-start justify-between mb-4">
                 <div className="w-10 h-10 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] rounded-md flex items-center justify-center">
                   <Icon size={16} className="text-zinc-500 dark:text-[#555]" strokeWidth={1.5} />
