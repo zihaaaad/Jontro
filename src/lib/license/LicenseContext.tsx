@@ -1,21 +1,10 @@
-import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
+import { useEffect, useState, useCallback, type ReactNode } from 'react';
 import {
   checkLicense, deactivateDevice, getDeviceId, revalidateCachedLicense,
   LicenseRejection, type LicensePlan,
 } from './licenseClient';
 import { isFirebaseConfigured } from './firebaseConfig';
-
-interface LicenseState {
-  status: 'checking' | 'inactive' | 'active' | 'error';
-  plan: LicensePlan | null;
-  activeKey: string | null;
-  error: string | null;
-  activate: (key: string) => Promise<boolean>;
-  deactivate: () => Promise<void>;
-  isPremium: boolean;
-}
-
-const LicenseCtx = createContext<LicenseState | null>(null);
+import { LicenseCtx, type LicenseState } from './licenseCtx';
 
 export function LicenseProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<LicenseState['status']>('checking');
@@ -77,10 +66,4 @@ export function LicenseProvider({ children }: { children: ReactNode }) {
   };
 
   return <LicenseCtx.Provider value={value}>{children}</LicenseCtx.Provider>;
-}
-
-export function useLicense(): LicenseState {
-  const ctx = useContext(LicenseCtx);
-  if (!ctx) throw new Error('useLicense must be used within a LicenseProvider');
-  return ctx;
 }

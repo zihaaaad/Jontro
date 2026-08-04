@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Lock } from 'lucide-react';
-import { useLicense } from './LicenseContext';
+import { useLicense } from './useLicense';
 
 export default function PremiumGate({ toolName, onActivate, children }: {
   toolName: string;

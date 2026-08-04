@@ -182,8 +182,8 @@
             <!-- Region Toggle -->
             <div class="flex items-center justify-center mb-12">
                 <div id="region-toggle" class="inline-flex items-center bg-zinc-900 border border-zinc-800 rounded-lg p-1 text-sm font-medium">
-                    <button data-region="global" class="region-btn px-4 py-2 rounded-md transition-none">🌍 Global (USD)</button>
-                    <button data-region="bd" class="region-btn px-4 py-2 rounded-md transition-none">🇧🇩 Bangladesh (BDT)</button>
+                    <button data-region="global" class="region-btn px-4 py-2 rounded-md transition-none">Global (USD)</button>
+                    <button data-region="bd" class="region-btn px-4 py-2 rounded-md transition-none">Bangladesh (BDT)</button>
                 </div>
             </div>
 
@@ -271,20 +271,23 @@
                 if (!response.ok) throw new Error("Failed to fetch release");
                 const release = await response.json();
 
-                const tag = release.tag_name; // e.g., 'v1.0.19'
-                const version = tag.replace('v', ''); // e.g., '1.0.19'
-
                 const versionText = document.getElementById("version-text");
-                if (versionText) versionText.textContent = `${tag} is now available`;
+                if (versionText) versionText.textContent = `${release.tag_name} is now available`;
 
-                const installerUrl = `https://github.com/zihaaaad/Jontro/releases/latest/download/Jontro.Setup.${version}.exe`;
-                document.querySelectorAll(".download-link").forEach(el => el.href = installerUrl);
+                // Read the real asset URL from the release instead of guessing a
+                // filename pattern - electron-builder's naming (hyphens, dots,
+                // spaces) has changed before and a guessed name silently 404s.
+                const exeAssets = release.assets.filter(a => a.name.toLowerCase().endsWith(".exe"));
+                const exeAsset = exeAssets.find(a => /setup/i.test(a.name)) || exeAssets[0];
+                if (exeAsset) {
+                    document.querySelectorAll(".download-link").forEach(el => el.href = exeAsset.browser_download_url);
+                }
             } catch (error) {
                 console.error("Error fetching latest release:", error);
-                // Fallback to static URL if the GitHub API call fails
-                const fallbackInstaller = "https://github.com/zihaaaad/Jontro/releases/latest/download/Jontro.Setup.1.0.23.exe";
-                document.getElementById("version-text").textContent = "v1.0.23 is now available";
-                document.querySelectorAll(".download-link").forEach(el => el.href = fallbackInstaller);
+                // Fallback: send the visitor to the Releases page itself rather
+                // than guessing a specific asset filename that may not exist.
+                document.getElementById("version-text").textContent = "See latest release";
+                document.querySelectorAll(".download-link").forEach(el => el.href = "https://github.com/zihaaaad/Jontro/releases/latest");
             }
         });
 

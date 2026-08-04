@@ -16,7 +16,7 @@ import VectorTracer from './tools/VectorTracer';
 import LicenseActivation from './tools/LicenseActivation';
 import ErrorBoundary from './components/ErrorBoundary';
 import PremiumGate from './lib/license/PremiumGate';
-import { useLicense } from './lib/license/LicenseContext';
+import { useLicense } from './lib/license/useLicense';
 import { Toaster, toast } from 'sonner';
 import pkg from '../package.json';
 

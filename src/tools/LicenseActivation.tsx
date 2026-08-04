@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { CheckCircle2, KeyRound, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
-import { useLicense } from '../lib/license/LicenseContext';
+import { useLicense } from '../lib/license/useLicense';
 import { isFirebaseConfigured } from '../lib/license/firebaseConfig';
 // Single source of truth for pricing, shared with the marketing site
 // (docs/pricing.json fetches this same file at runtime) so a price change
