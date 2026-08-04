@@ -34,21 +34,27 @@ cd Jontro
 # Install dependencies
 npm install
 
+# One-time: download the offline OCR language models (needs internet once)
+npm run fetch:tessdata
+
 # Start the development server
 npm run dev
 ```
 
 ##  Building for Production
 
-To compile Jontro into a standalone `.exe` installer for Windows:
+Jontro builds installers for **Windows** (NSIS) and **macOS** (DMG, Intel + Apple Silicon):
 
 ```bash
 npm run build
 ```
-The compiled installer will be located in the `release/` directory.
+The compiled installer(s) will be located in the `release/` directory. macOS builds must be produced on a Mac (or via the CI workflow in `.github/workflows/release.yml`, which builds both platforms on every tagged release). Unsigned macOS builds will trigger a Gatekeeper "unidentified developer" warning until the user right-click's → Open once; see `.github/workflows/release.yml` for the optional code-signing secrets.
 
 ##  Security & Privacy
-Jontro operates strictly on a 0-telemetry, 0-cloud architecture. All parsing, rendering, extracting, and neural network computing happens directly on your CPU and RAM. The application is isolated from external API calls to ensure absolute data privacy.
+Jontro operates on a 0-telemetry, 0-cloud architecture: all parsing, rendering, extracting, and neural network computing happens directly on your CPU and RAM, with no external API calls at runtime. The one exception is the `npm run fetch:tessdata` setup step above, which downloads the OCR language models once during installation - after that, OCR runs fully offline.
+
+##  Third-Party Licensing
+Jontro's own code is MIT-licensed. One bundled dependency needs a closer look: the packaged FFmpeg binary is GPLv3-licensed (not LGPL) and is a stale 2018 build. See [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md) for the full analysis and recommended remediation.
 
 ##  License
 This project is open-source and licensed under the MIT License.

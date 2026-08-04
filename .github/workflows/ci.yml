@@ -1,0 +1,55 @@
+name: CI Build Check
+
+# Runs on every push and PR (unlike release.yml, which only fires on version
+# tags and actually publishes). This is the "does my change still build on
+# Windows and Mac" signal - fast feedback without cutting a release.
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build-check:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck + Build (Windows/Mac installer)
+        run: npm run build
+
+      # No GH_TOKEN / code-signing secrets here on purpose - this workflow
+      # never publishes. It only proves the app still packages cleanly on
+      # both platforms after a change, and gives you a downloadable build
+      # to sanity-check without waiting for a tagged release.
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jontro-${{ matrix.os }}-${{ github.sha }}
+          path: |
+            release/*.exe
+            release/*.dmg
+          if-no-files-found: ignore
+          retention-days: 14

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { UploadCloud, Settings2, Download, X } from 'lucide-react';
 import { toast } from 'sonner';
 import Cropper from 'react-easy-crop';
@@ -24,6 +24,13 @@ export default function ImageResizer() {
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [originalAspect, setOriginalAspect] = useState<number>(1);
+
+  // Mirrors previewUrl so callbacks bound once (e.g. the Escape key listener
+  // below) always revoke the *current* blob URL instead of a stale closure.
+  const previewUrlRef = useRef<string | null>(null);
+  useEffect(() => {
+    previewUrlRef.current = previewUrl;
+  }, [previewUrl]);
 
   // Cleanup memory leak when component unmounts or file changes
   useEffect(() => {
@@ -84,7 +91,7 @@ export default function ImageResizer() {
 
   const clearImage = () => {
     setSelectedFile(null);
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
     setPreviewUrl(null);
     setWidth('');
     setHeight('');
@@ -111,17 +118,28 @@ export default function ImageResizer() {
 
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      
-      const targetW = parseInt(width) || croppedAreaPixels.width;
-      const targetH = parseInt(height) || croppedAreaPixels.height;
-      
+
+      // Clamp to positive integers - a negative/zero/NaN value would otherwise
+      // reach canvas.width/height unguarded and throw an IndexSizeError.
+      const parsedW = parseInt(width);
+      const parsedH = parseInt(height);
+      const targetW = Number.isFinite(parsedW) && parsedW > 0 ? parsedW : croppedAreaPixels.width;
+      const targetH = Number.isFinite(parsedH) && parsedH > 0 ? parsedH : croppedAreaPixels.height;
+
       canvas.width = targetW;
       canvas.height = targetH;
-      
+
       if (ctx) {
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
-        
+
+        // JPEG has no alpha channel - canvas defaults transparent pixels to
+        // black on flatten, so fill white first to match user expectations.
+        if (format === 'JPEG') {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, targetW, targetH);
+        }
+
         ctx.drawImage(
           img,
           croppedAreaPixels.x,
@@ -173,7 +191,7 @@ export default function ImageResizer() {
       } else {
         toast.error('Native file saving not available in browser sandbox.');
       }
-    } catch (e) {
+    } catch {
       toast.error('Failed to process image');
     } finally {
       setIsExporting(false);
@@ -210,7 +228,7 @@ export default function ImageResizer() {
               />
               <button 
                 onClick={clearImage}
-                className="absolute top-4 right-4 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg transition-all duration-200 hover:scale-110 active:scale-95"
+                className="absolute top-4 right-4 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg transition-none active:scale-95"
                 title="Clear Image (Esc)"
               >
                 <X size={16} />
@@ -234,13 +252,13 @@ export default function ImageResizer() {
             <label 
               onDrop={handleDrop}
               onDragOver={handleDragOver}
-              className="flex-1 m-8 border border-dashed border-zinc-300 dark:border-[#404040] hover:border-zinc-400 dark:hover:border-[#737373] bg-zinc-50 hover:bg-zinc-100 dark:bg-[#0e0e0e] dark:hover:bg-[#1a1a1a] rounded-md flex flex-col items-center justify-center p-6 cursor-pointer transition-all duration-200"
+              className="flex-1 m-8 border border-dashed border-zinc-300 dark:border-[#404040] hover:border-zinc-400 dark:hover:border-[#838383] bg-zinc-50 hover:bg-zinc-100 dark:bg-[#0e0e0e] dark:hover:bg-[#1a1a1a] rounded-md flex flex-col items-center justify-center p-6 cursor-pointer transition-none"
             >
-              <UploadCloud size={32} strokeWidth={1.5} className="text-zinc-500 dark:text-[#737373] mb-4 transition-transform duration-300 hover:scale-110" />
+              <UploadCloud size={32} strokeWidth={1.5} className="text-zinc-500 dark:text-[#838383] mb-4" />
               <span className="text-sm font-medium text-zinc-900 dark:text-[#ededed] mb-1 text-center">
                 Drag image here or click to browse
               </span>
-              <span className="text-xs text-zinc-500 dark:text-[#737373] text-center mt-2">
+              <span className="text-xs text-zinc-500 dark:text-[#838383] text-center mt-2">
                 PNG, JPG, WEBP
               </span>
               <input type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
@@ -250,7 +268,7 @@ export default function ImageResizer() {
 
         {/* Right Panel - Settings */}
         <div className="w-full md:w-72 bg-white dark:bg-[#141414] p-6 flex flex-col relative z-20">
-          <div className="flex items-center text-xs font-semibold text-zinc-500 dark:text-[#737373] uppercase tracking-wider mb-6">
+          <div className="flex items-center text-xs font-semibold text-zinc-500 dark:text-[#838383] uppercase tracking-wider mb-6">
             <Settings2 size={14} className="mr-2" /> Parameters
           </div>
 
@@ -265,7 +283,7 @@ export default function ImageResizer() {
                 value={width}
                 onChange={(e) => setWidth(e.target.value)}
                 placeholder="Original" 
-                className="w-full bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-300 dark:border-[#404040] rounded text-sm px-3 py-2 text-zinc-900 dark:text-[#ededed] focus:outline-none focus:border-zinc-500 dark:focus:border-[#737373]" 
+                className="w-full bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-300 dark:border-[#404040] rounded text-sm px-3 py-2 text-zinc-900 dark:text-[#ededed] focus:outline-none focus:border-zinc-500 dark:focus:border-[#838383]" 
               />
             </div>
             <div>
@@ -275,7 +293,7 @@ export default function ImageResizer() {
                 value={height}
                 onChange={(e) => setHeight(e.target.value)}
                 placeholder="Original" 
-                className="w-full bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-300 dark:border-[#404040] rounded text-sm px-3 py-2 text-zinc-900 dark:text-[#ededed] focus:outline-none focus:border-zinc-500 dark:focus:border-[#737373]" 
+                className="w-full bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-300 dark:border-[#404040] rounded text-sm px-3 py-2 text-zinc-900 dark:text-[#ededed] focus:outline-none focus:border-zinc-500 dark:focus:border-[#838383]" 
               />
             </div>
             <div>
@@ -283,7 +301,7 @@ export default function ImageResizer() {
               <select 
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                className="w-full bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-300 dark:border-[#404040] rounded text-sm px-3 py-2 text-zinc-900 dark:text-[#ededed] focus:outline-none focus:border-zinc-500 dark:focus:border-[#737373] appearance-none"
+                className="w-full bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-300 dark:border-[#404040] rounded text-sm px-3 py-2 text-zinc-900 dark:text-[#ededed] focus:outline-none focus:border-zinc-500 dark:focus:border-[#838383] appearance-none"
               >
                 <option>Original</option>
                 <option>Grayscale</option>
@@ -295,7 +313,7 @@ export default function ImageResizer() {
               <select 
                 value={format}
                 onChange={(e) => setFormat(e.target.value)}
-                className="w-full bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-300 dark:border-[#404040] rounded text-sm px-3 py-2 text-zinc-900 dark:text-[#ededed] focus:outline-none focus:border-zinc-500 dark:focus:border-[#737373] appearance-none"
+                className="w-full bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-300 dark:border-[#404040] rounded text-sm px-3 py-2 text-zinc-900 dark:text-[#ededed] focus:outline-none focus:border-zinc-500 dark:focus:border-[#838383] appearance-none"
               >
                 <option>Same as original</option>
                 <option>JPEG</option>
@@ -309,10 +327,10 @@ export default function ImageResizer() {
             id="export-img-btn"
             onClick={handleExport}
             disabled={!selectedFile || isExporting}
-            className={`w-full mt-6 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center justify-center ${
+            className={`w-full mt-6 py-2 rounded-md text-sm font-medium transition-none flex items-center justify-center ${
               !selectedFile || isExporting
-                ? 'bg-zinc-100 dark:bg-[#262626] text-zinc-500 dark:text-[#737373] cursor-not-allowed'
-                : 'bg-zinc-900 hover:bg-zinc-800 dark:bg-[#ededed] dark:hover:bg-white text-white dark:text-[#0e0e0e] hover:scale-[1.02] active:scale-[0.98]'
+                ? 'bg-zinc-100 dark:bg-[#262626] text-zinc-500 dark:text-[#838383] cursor-not-allowed'
+                : 'bg-zinc-900 hover:bg-zinc-800 dark:bg-[#ededed] dark:hover:bg-white text-white dark:text-[#0e0e0e] active:scale-[0.98]'
             }`}
             title="Export Image (Ctrl+S)"
           >

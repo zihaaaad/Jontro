@@ -5,13 +5,13 @@
 ## 1. Global Layout & Navigation (App.tsx)
 *   **The Grid:** The application uses a strict two-column layout (Sidebar + Workspace). This is the gold standard for desktop utilities.
 *   **Responsiveness:** The sidebar intelligently collapses into an "Icon-Only" mode on smaller windows, ensuring the primary workspace is never horizontally squashed. 
-*   **Loading State:** The 800ms "Initializing Environment" boot screen successfully masks raw HTML loading and establishes a "compiled software" feel.
+*   **Loading State:** A ~2 second animated "boot log" sequence (six lines, staggered at 250ms each) successfully masks raw HTML loading and establishes a "compiled software" feel.
 
 ## 2. Component & Button Consistency Check
-I have verified every single button and input across all 6 tools to ensure 100% adherence to the Design System.
+I have verified every single button and input across all 8 tools to ensure 100% adherence to the Design System.
 
 ### Primary Action Buttons (The "Submit" Layer)
-*   **Locations:** `Start Extraction` (Video), `Export` (Image), `Capture Screen` (OCR), `Add` (Tasks), `Generate Password` (Security).
+*   **Locations:** `Start Bulk Extraction` (Video), `Export Image` (Image Resizer), `Trace Image` (Vector Tracer), `Merge & Export` / `Extract Pages` / `Convert to PNG` (PDF Tools), `Add` (Tasks), `Generate Password` (Security), `PNG` / `SVG` (QR Studio). OCR has no primary button by design - it's driven by Ctrl+V paste or a Browse fallback.
 *   **Styling:** Every single primary button perfectly uses the inverted contrast class: `bg-[#ededed] hover:bg-white text-[#0e0e0e]`.
 *   **UX Result:** The user's eye is always drawn to the most important action on the screen instantly, regardless of which tool they are using.
 

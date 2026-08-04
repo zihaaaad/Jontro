@@ -7,9 +7,23 @@
     background-color: #f4f4f5;
     margin: 0;
     padding: 0;
-    font-family: 'Inter', sans-serif;
+    font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   }
   .dark body {
     background-color: #0e0e0e;
+  }
+
+  /* Keyboard-only focus ring. Inputs already define their own focus border,
+     so this specifically covers buttons/links/labels/summary, which had no
+     visible focus indicator at all (WCAG 2.4.7). Uses :focus-visible so it
+     only shows for keyboard navigation, not mouse clicks. */
+  button:focus-visible,
+  a:focus-visible,
+  label:focus-visible,
+  [role="button"]:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+    border-radius: 2px;
   }
 }

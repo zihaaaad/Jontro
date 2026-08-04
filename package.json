@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build && electron-builder",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "fetch:tessdata": "node scripts/fetch-tessdata.mjs"
   },
   "build": {
     "appId": "com.jontro.app",
@@ -20,20 +21,34 @@
     "win": {
       "icon": "build/icon.png",
       "target": [
-        "nsis",
-        "portable"
+        "nsis"
+      ]
+    },
+    "mac": {
+      "icon": "build/icon.png",
+      "category": "public.app-category.utilities",
+      "target": [
+        "dmg"
       ]
     },
     "directories": {
       "output": "release"
     },
     "asarUnpack": [
-      "node_modules/@ffmpeg-installer/**/*.exe"
+      "node_modules/@ffmpeg-installer/**"
     ],
     "files": [
       "package.json",
       "dist/**/*",
-      "dist-electron/**/*"
+      "dist-electron/**/*",
+      "!node_modules/firebase/**",
+      "!node_modules/@firebase/**"
+    ],
+    "extraResources": [
+      {
+        "from": "licenses",
+        "to": "licenses"
+      }
     ]
   },
   "dependencies": {
@@ -42,6 +57,7 @@
     "@tailwindcss/vite": "^4.3.3",
     "@types/zxcvbn": "^4.4.5",
     "electron-updater": "^6.8.9",
+    "firebase": "^12.17.0",
     "fluent-ffmpeg": "^2.1.3",
     "imagetracerjs": "^1.2.6",
     "lucide-react": "^1.27.0",
@@ -51,7 +67,6 @@
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-easy-crop": "^6.2.3",
-    "sharp": "^0.35.3",
     "sonner": "^2.0.7",
     "tesseract.js": "^7.0.0",
     "zxcvbn": "^4.4.2"

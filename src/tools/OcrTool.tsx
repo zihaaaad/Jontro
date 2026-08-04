@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Languages, Copy, CheckCircle2, UploadCloud, ClipboardPaste, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import Tesseract from 'tesseract.js';
@@ -8,6 +8,17 @@ import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
+// Fully offline Tesseract config. Without these, tesseract.js defaults to
+// pulling its worker script, WASM core, and trained language data from
+// jsdelivr.net / projectnaptha.com CDNs on every single scan - the opposite
+// of "completely offline" (see public/vendor/tesseract-*, scripts/fetch-tessdata.mjs).
+const TESSERACT_OPTIONS = {
+  workerPath: `${import.meta.env.BASE_URL}vendor/tesseract-worker/worker.min.js`,
+  corePath: `${import.meta.env.BASE_URL}vendor/tesseract-core`,
+  langPath: `${import.meta.env.BASE_URL}tessdata`,
+  gzip: true,
+};
+
 export default function OcrTool() {
   const [extractedText, setExtractedText] = useState("");
   const [copied, setCopied] = useState(false);
@@ -16,27 +27,10 @@ export default function OcrTool() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [language, setLanguage] = useState('ben+eng');
 
-  // Listen for Clipboard Paste events natively
-  useEffect(() => {
-    const handlePaste = (e: ClipboardEvent) => {
-      const items = e.clipboardData?.items;
-      if (!items) return;
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf('image') !== -1) {
-          const file = items[i].getAsFile();
-          if (file) {
-            e.preventDefault(); // stop default paste
-            processImage(file);
-          }
-        }
-      }
-    };
-    
-    window.addEventListener('paste', handlePaste);
-    return () => window.removeEventListener('paste', handlePaste);
-  }, []);
-
-  const processImage = async (file: File) => {
+  // useCallback (with the state it actually reads as deps) so the paste
+  // listener below always re-binds to a fresh closure instead of forever
+  // seeing isProcessing/previewImage/language as they were at mount.
+  const processImage = useCallback(async (file: File) => {
     if (isProcessing) {
       toast.warning("Please wait for the current scan to finish.");
       return;
@@ -89,6 +83,7 @@ export default function OcrTool() {
           
           const processedDataUrl = canvas.toDataURL('image/png');
           const result = await Tesseract.recognize(processedDataUrl, language, {
+            ...TESSERACT_OPTIONS,
             logger: m => {
               if (m.status === 'recognizing text') {
                 const pageBaseProgress = ((i - 1) / pdf.numPages) * 100;
@@ -157,6 +152,7 @@ export default function OcrTool() {
         const processedDataUrl = canvas.toDataURL('image/png');
         
         const result = await Tesseract.recognize(processedDataUrl, language, {
+          ...TESSERACT_OPTIONS,
           logger: m => {
             if (m.status === 'recognizing text') {
               setProgress(m.progress * 100);
@@ -173,12 +169,40 @@ export default function OcrTool() {
         }
       }
       }
-    } catch (e) {
-      toast.error("Failed to extract text. Ensure the file is valid.");
+    } catch (e: any) {
+      const msg = String(e?.message || e || '');
+      if (msg.includes('tessdata') || msg.includes('traineddata') || msg.toLowerCase().includes('fetch')) {
+        toast.error("OCR language data not found.", {
+          description: "Run 'npm run fetch:tessdata' once to download the offline language models.",
+          duration: 8000,
+        });
+      } else {
+        toast.error("Failed to extract text. Ensure the file is valid.");
+      }
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [isProcessing, previewImage, language]);
+
+  // Listen for Clipboard Paste events natively
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const file = items[i].getAsFile();
+          if (file) {
+            e.preventDefault(); // stop default paste
+            processImage(file);
+          }
+        }
+      }
+    };
+
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [processImage]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -209,10 +233,10 @@ export default function OcrTool() {
           {!previewImage && !isProcessing ? (
             <div className="flex-1 flex flex-col items-center justify-center p-8">
               <div className="bg-zinc-100 dark:bg-[#0e0e0e] border border-zinc-200 dark:border-[#262626] rounded-full p-6 mb-6">
-                <ClipboardPaste size={48} strokeWidth={1} className="text-zinc-400 dark:text-[#737373]" />
+                <ClipboardPaste size={48} strokeWidth={1} className="text-zinc-400 dark:text-[#838383]" />
               </div>
               <h3 className="text-base font-medium text-zinc-900 dark:text-[#ededed] mb-2 text-center">Press Ctrl + V</h3>
-              <p className="text-sm text-zinc-500 dark:text-[#737373] text-center mb-8 max-w-xs">
+              <p className="text-sm text-zinc-500 dark:text-[#838383] text-center mb-8 max-w-xs">
                 Take a screenshot with Snipping Tool and paste it directly anywhere in the app to begin scanning.
               </p>
               
@@ -222,8 +246,8 @@ export default function OcrTool() {
                 <div className="flex-1 h-px bg-zinc-200 dark:bg-[#262626]"></div>
               </div>
               
-              <label className="border border-dashed border-zinc-300 dark:border-[#404040] hover:border-zinc-400 dark:hover:border-[#737373] bg-zinc-50 dark:bg-[#0e0e0e] rounded-md flex flex-col items-center justify-center p-6 cursor-pointer transition-none w-full max-w-xs">
-                <UploadCloud size={24} className="text-zinc-500 dark:text-[#737373] mb-3" />
+              <label className="border border-dashed border-zinc-300 dark:border-[#404040] hover:border-zinc-400 dark:hover:border-[#838383] bg-zinc-50 dark:bg-[#0e0e0e] rounded-md flex flex-col items-center justify-center p-6 cursor-pointer transition-none w-full max-w-xs">
+                <UploadCloud size={24} className="text-zinc-500 dark:text-[#838383] mb-3" />
                 <span className="text-sm font-medium text-zinc-900 dark:text-[#ededed]">Browse Image or PDF</span>
                 <input type="file" accept="image/*,application/pdf" className="hidden" onChange={handleFileUpload} />
               </label>
@@ -259,7 +283,7 @@ export default function OcrTool() {
         <div className="bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] rounded-md p-6 flex flex-col relative">
           <div className="flex items-center justify-between mb-4 border-b border-zinc-200 dark:border-[#262626] pb-4">
             <div className="flex items-center space-x-3">
-              <div className="flex items-center text-xs text-zinc-500 dark:text-[#737373]">
+              <div className="flex items-center text-xs text-zinc-500 dark:text-[#838383]">
                 <Languages size={14} className="mr-2" />
                 <span className="mr-2">Language:</span>
                 <select 
@@ -280,7 +304,7 @@ export default function OcrTool() {
               className={`flex items-center text-xs transition-none ${
                 !extractedText || isProcessing 
                   ? 'text-zinc-400 dark:text-[#555] cursor-not-allowed' 
-                  : 'text-zinc-500 hover:text-zinc-900 dark:text-[#737373] dark:hover:text-[#ededed]'
+                  : 'text-zinc-500 hover:text-zinc-900 dark:text-[#838383] dark:hover:text-[#ededed]'
               }`}
             >
               {copied ? <CheckCircle2 size={14} className="text-zinc-900 dark:text-[#ededed] mr-1.5" /> : <Copy size={14} className="mr-1.5" />}

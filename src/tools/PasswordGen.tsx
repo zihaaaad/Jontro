@@ -18,11 +18,20 @@ export default function PasswordGen() {
     if (includeNumbers) charset += '0123456789';
     if (includeSymbols) charset += '!@#$%^&*()_+~`|}{[]:;?><,./-=';
 
+    // Rejection sampling avoids modulo bias: charset.length rarely divides
+    // 2^32 evenly, so `randomUint32 % charset.length` would make some
+    // characters marginally more likely than others. We discard draws that
+    // fall in the biased remainder range and redraw instead.
+    const maxValid = Math.floor(0xFFFFFFFF / charset.length) * charset.length;
     let newPassword = '';
-    const array = new Uint32Array(length);
-    window.crypto.getRandomValues(array);
-    for (let i = 0; i < length; i++) {
-      newPassword += charset[array[i] % charset.length];
+    const batch = new Uint32Array(length * 2); // headroom for rejected draws
+    while (newPassword.length < length) {
+      window.crypto.getRandomValues(batch);
+      for (let i = 0; i < batch.length && newPassword.length < length; i++) {
+        if (batch[i] < maxValid) {
+          newPassword += charset[batch[i] % charset.length];
+        }
+      }
     }
     setPassword(newPassword);
     
@@ -71,7 +80,7 @@ export default function PasswordGen() {
         </div>
         
         {password !== '****************' && (
-          <div className="mb-6 text-xs font-medium text-zinc-500 dark:text-[#737373] uppercase tracking-wider flex items-center">
+          <div className="mb-6 text-xs font-medium text-zinc-500 dark:text-[#838383] uppercase tracking-wider flex items-center">
             Algorithmic Entropy: <span className={`ml-2 px-2 py-0.5 rounded text-white ${score < 2 ? 'bg-red-500' : score < 4 ? 'bg-yellow-500' : 'bg-green-500'}`}>{score < 2 ? 'Weak' : score < 4 ? 'Good' : 'Uncrackable'}</span>
           </div>
         )}

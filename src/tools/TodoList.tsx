@@ -7,7 +7,14 @@ interface Task { id: string; text: string; completed: boolean; urgency?: number;
 export default function TodoList() {
   const [tasks, setTasks] = useState<Task[]>(() => {
     const saved = localStorage.getItem('jontro-todos');
-    return saved ? JSON.parse(saved) : [];
+    if (!saved) return [];
+    try {
+      const parsed = JSON.parse(saved);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      // Corrupted/incompatible localStorage data - reset rather than crash the app.
+      return [];
+    }
   });
   const [newTask, setNewTask] = useState('');
 
@@ -71,7 +78,7 @@ export default function TodoList() {
             <input 
               type="text" value={newTask} onChange={(e) => setNewTask(e.target.value)}
               placeholder="Add a new task..."
-              className="flex-1 bg-white dark:bg-[#0e0e0e] border border-zinc-300 dark:border-[#404040] text-zinc-900 dark:text-[#ededed] text-sm rounded-md px-3 py-2 focus:outline-none focus:border-zinc-500 dark:focus:border-[#737373]"
+              className="flex-1 bg-white dark:bg-[#0e0e0e] border border-zinc-300 dark:border-[#404040] text-zinc-900 dark:text-[#ededed] text-sm rounded-md px-3 py-2 focus:outline-none focus:border-zinc-500 dark:focus:border-[#838383]"
             />
             <button type="submit" disabled={!newTask.trim()} className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 dark:bg-[#ededed] dark:hover:bg-white text-white dark:text-[#0e0e0e] disabled:opacity-50 text-sm font-medium rounded-md flex items-center">
               <Plus size={16} className="mr-1" /> Add
@@ -82,7 +89,7 @@ export default function TodoList() {
         {/* Task List */}
         <div className="flex-1 overflow-y-auto p-4 bg-white dark:bg-[#0e0e0e]">
           {tasks.length === 0 ? (
-            <div className="h-full flex items-center justify-center text-sm text-zinc-500 dark:text-[#737373]">No pending tasks.</div>
+            <div className="h-full flex items-center justify-center text-sm text-zinc-500 dark:text-[#838383]">No pending tasks.</div>
           ) : (
             <div className="space-y-1">
               {tasks.map(task => (
@@ -93,7 +100,7 @@ export default function TodoList() {
                       type="checkbox" checked={task.completed} onChange={() => toggleTask(task.id)}
                       className="w-4 h-4 rounded-sm border border-zinc-300 dark:border-[#555] bg-white dark:bg-transparent checked:bg-blue-500 dark:checked:bg-blue-500 checked:border-blue-500 appearance-none flex-shrink-0 relative before:content-[''] before:absolute before:inset-0 before:m-auto before:w-2 before:h-2 before:bg-white before:scale-0 checked:before:scale-100 before:transition-none"
                     />
-                    <span className={`ml-3 text-sm flex items-center ${task.completed ? 'text-zinc-500 dark:text-[#737373] line-through' : 'text-zinc-700 dark:text-[#ededed]'}`}>
+                    <span className={`ml-3 text-sm flex items-center ${task.completed ? 'text-zinc-500 dark:text-[#838383] line-through' : 'text-zinc-700 dark:text-[#ededed]'}`}>
                       {task.text}
                       {/* @ts-ignore */}
                       {task.urgency >= 100 && !task.completed && (
@@ -105,7 +112,7 @@ export default function TodoList() {
                       )}
                     </span>
                   </label>
-                  <button onClick={() => deleteTask(task.id)} className="ml-4 p-1.5 text-zinc-500 dark:text-[#737373] hover:text-red-500 dark:hover:text-[#ededed] opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 active:scale-95">
+                  <button onClick={() => deleteTask(task.id)} className="ml-4 p-1.5 text-zinc-500 dark:text-[#838383] hover:text-red-500 dark:hover:text-[#ededed] opacity-0 group-hover:opacity-100 transition-none active:scale-95">
                     <Trash2 size={14} />
                   </button>
                 </div>

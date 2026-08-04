@@ -1,6 +1,6 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, webUtils } from 'electron';
 
-// Expose safe native Windows APIs to the React frontend
+// Expose safe native OS APIs to the React frontend
 contextBridge.exposeInMainWorld('electronAPI', {
   // Dialogs
   openFile: (options?: any) => ipcRenderer.invoke('dialog:openFile', options),
@@ -8,6 +8,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openDirectory: () => ipcRenderer.invoke('dialog:openDirectory'),
   saveBuffer: (buffer: ArrayBuffer, defaultName: string) => ipcRenderer.invoke('file:saveBuffer', buffer, defaultName),
   saveFilesBulk: (files: {name: string, buffer: ArrayBuffer}[]) => ipcRenderer.invoke('file:saveFilesBulk', files),
+
+  // Resolves the real filesystem path for a File object obtained via drag-and-drop.
+  // Electron removed File.path as of v32+; webUtils.getPathForFile() is the replacement
+  // and works fine even with sandbox: true.
+  getPathForFile: (file: File) => webUtils.getPathForFile(file),
   
   // App Info
   getAppVersion: () => ipcRenderer.invoke('system:getAppVersion'),

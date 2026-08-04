@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
 import path from 'path';
 import os from 'os';
 import { autoUpdater } from 'electron-updater';
@@ -31,7 +31,10 @@ const createWindow = () => {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
-    minWidth: 900,
+    // Below Tailwind's md: breakpoint (768px) so the app's compact/icon-only
+    // sidebar layout (built for narrow windows) is actually reachable -
+    // it previously couldn't render at all with minWidth: 900.
+    minWidth: 640,
     minHeight: 600,
     title: 'Jontro Desktop',
     icon: path.join(__dirname, '../public/jontro-icon.svg'),
@@ -41,9 +44,27 @@ const createWindow = () => {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false, // Required to expose native File.path for media conversion
+      sandbox: true, // webUtils.getPathForFile() (exposed via preload) works fine sandboxed
       plugins: true, // Enable native Chromium PDF Viewer
     },
+  });
+
+  // Without this, any http(s) link clicked in the renderer (e.g. an
+  // "Upgrade" or "Buy" link) either silently does nothing or navigates this
+  // BrowserWindow itself away from the app - there's no default browser
+  // popup handling in Electron. Route external links to the OS browser and
+  // deny in-app popups/new windows entirely.
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      shell.openExternal(url);
+    }
+    return { action: 'deny' };
+  });
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      event.preventDefault();
+      shell.openExternal(url);
+    }
   });
 
   if (process.env.VITE_DEV_SERVER_URL) {
@@ -178,10 +199,18 @@ ipcMain.handle('file:saveFilesBulk', async (_event, files: {name: string, buffer
 
 import ffmpeg from 'fluent-ffmpeg';
 
+// Cross-platform binary lookup (was hardcoded to win32-x64, which made
+// Video-to-Audio non-functional on any Mac/Linux build). Mirrors the
+// platform-dir convention @ffmpeg-installer/ffmpeg itself uses internally,
+// but resolved manually because binaries must be read from the physical
+// app.asar.unpacked path when packaged - they cannot execute from inside
+// the .asar archive even though Electron's fs shim can *read* them there.
+const ffmpegPlatformDir = `${process.platform}-${process.arch}`; // e.g. win32-x64, darwin-arm64, darwin-x64
+const ffmpegBinaryName = process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg';
 
 let ffmpegPath = '';
-const prodPath = path.join(process.resourcesPath, 'app.asar.unpacked', 'node_modules', '@ffmpeg-installer', 'win32-x64', 'ffmpeg.exe');
-const devPath = path.join(app.getAppPath(), 'node_modules', '@ffmpeg-installer', 'win32-x64', 'ffmpeg.exe');
+const prodPath = path.join(process.resourcesPath, 'app.asar.unpacked', 'node_modules', '@ffmpeg-installer', ffmpegPlatformDir, ffmpegBinaryName);
+const devPath = path.join(app.getAppPath(), 'node_modules', '@ffmpeg-installer', ffmpegPlatformDir, ffmpegBinaryName);
 
 if (fs.existsSync(prodPath)) {
   ffmpegPath = prodPath;
@@ -191,6 +220,8 @@ if (fs.existsSync(prodPath)) {
 
 if (ffmpegPath) {
   ffmpeg.setFfmpegPath(ffmpegPath);
+} else {
+  console.error(`[ffmpeg] No bundled binary found for platform "${ffmpegPlatformDir}". Video-to-Audio conversion will fail until one is installed.`);
 }
 
 ipcMain.handle('system:getAppVersion', () => {

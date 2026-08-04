@@ -8,11 +8,20 @@ on:
 
 jobs:
   build-and-release:
-    runs-on: windows-latest
-    
-    # We need write permissions to upload the .exe to the Release page
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact_glob: release/*.exe
+          - os: macos-latest
+            artifact_glob: release/*.dmg
+
+    runs-on: ${{ matrix.os }}
+
+    # We need write permissions to upload the built installers to the Release page
     permissions:
-      contents: write 
+      contents: write
 
     steps:
       - name: Check out Git repository
@@ -27,13 +36,26 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Compile Application & Build .exe Installer
+      - name: Fetch offline OCR language data
+        run: npm run fetch:tessdata
+
+      - name: Compile Application & Build Installer
         run: npm run build
         env:
           # GitHub provides this automatically
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # macOS code signing / notarization (optional - see README).
+          # Without these secrets the .dmg still builds, but unsigned:
+          # Gatekeeper will show an "unidentified developer" warning until
+          # the user right-click > Open past it once.
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
       - name: Generate Data-Driven Release Notes
+        if: matrix.os == 'windows-latest'
         id: changelog
         run: |
           echo "## Jontro Build Analytics" > release-notes.md
@@ -44,7 +66,7 @@ jobs:
           echo "" >> release-notes.md
           echo "### Build Metrics" >> release-notes.md
           echo "- **Node Environment:** v20" >> release-notes.md
-          echo "- **Architecture:** Windows x64" >> release-notes.md
+          echo "- **Platforms:** Windows x64, macOS (Intel + Apple Silicon)" >> release-notes.md
           echo "- **Core Dependencies:** Electron, React, Tailwind CSS v4" >> release-notes.md
 
       - name: Publish to GitHub Releases
@@ -54,8 +76,7 @@ jobs:
           draft: false
           prerelease: false
           make_latest: true
-          body_path: release-notes.md
-          files: |
-            release/*.exe
+          body_path: ${{ matrix.os == 'windows-latest' && 'release-notes.md' || '' }}
+          files: ${{ matrix.artifact_glob }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

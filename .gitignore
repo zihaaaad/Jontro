@@ -16,6 +16,9 @@ dist-ssr
 dist-electron
 release
 
+# Firebase CLI local cache/deploy metadata
+.firebase
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

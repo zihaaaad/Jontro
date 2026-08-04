@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { 
+import {
   FileAudio, Image as ImageIcon, Files, ScanText, ListTodo, KeyRound,
-  QrCode, ArrowRightLeft, Timer, Mic
+  QrCode, ArrowRightLeft, Timer, Mic, PenTool
 } from 'lucide-react';
 
 interface HomeDashboardProps { onSelectTool: (toolId: string) => void; }
@@ -14,7 +14,7 @@ export default function HomeDashboard({ onSelectTool }: HomeDashboardProps) {
   const tools = [
     { id: 'video-converter', name: 'Video to Audio', icon: FileAudio, desc: 'Extract audio tracks from video files locally.', category: 'Media' },
     { id: 'image-resizer', name: 'Image Resizer', icon: ImageIcon, desc: 'Resize and convert image formats instantly.', category: 'Media' },
-    { id: 'vector-tracer', name: 'Vector Tracer', icon: ImageIcon, desc: 'Convert raster images (PNG, JPG) to scalable SVG vectors.', category: 'Media' },
+    { id: 'vector-tracer', name: 'Vector Tracer', icon: PenTool, desc: 'Convert raster images (PNG, JPG) to scalable SVG vectors.', category: 'Media' },
     { id: 'pdf-tools', name: 'PDF Tools', icon: Files, desc: 'Locally manipulate PDF documents securely.', category: 'Productivity' },
     { id: 'ocr-tool', name: 'Screenshot & OCR', icon: ScanText, desc: 'Extract text from your screen locally via WebAssembly.', category: 'Productivity' },
     { id: 'qr-studio', name: 'QR Studio', icon: QrCode, desc: 'Generate high-quality custom QR codes for links, text, and contacts.', category: 'Utilities' },
@@ -44,10 +44,10 @@ export default function HomeDashboard({ onSelectTool }: HomeDashboardProps) {
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-3 py-1.5 text-xs font-medium rounded transition-all duration-200 whitespace-nowrap active:scale-95 ${
+              className={`px-3 py-1.5 text-xs font-medium rounded transition-none whitespace-nowrap active:scale-95 ${
                 activeCategory === cat 
                   ? 'bg-zinc-100 text-zinc-900 dark:bg-[#262626] dark:text-[#ededed]' 
-                  : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50 dark:text-[#737373] dark:hover:text-[#ededed] dark:hover:bg-[#1f1f1f]'
+                  : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50 dark:text-[#838383] dark:hover:text-[#ededed] dark:hover:bg-[#1f1f1f]'
               }`}
             >
               {cat}
@@ -63,7 +63,7 @@ export default function HomeDashboard({ onSelectTool }: HomeDashboardProps) {
             <button
               key={tool.id}
               onClick={() => onSelectTool(tool.id)}
-              className="bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] hover:border-zinc-400 dark:hover:border-[#737373] hover:bg-zinc-50 dark:hover:bg-[#1a1a1a] rounded-md p-6 flex flex-col text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-md group h-full"
+              className="bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] hover:border-zinc-400 dark:hover:border-[#838383] hover:bg-zinc-50 dark:hover:bg-[#1a1a1a] rounded-md p-6 flex flex-col text-left transition-none group h-full"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="w-10 h-10 bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-200 dark:border-[#262626] rounded-md flex items-center justify-center group-hover:border-zinc-300 dark:group-hover:border-[#404040]">
@@ -72,7 +72,7 @@ export default function HomeDashboard({ onSelectTool }: HomeDashboardProps) {
                 <span className="text-[10px] text-zinc-500 dark:text-[#555] font-medium uppercase tracking-wider">{tool.category}</span>
               </div>
               <h3 className="text-sm font-medium text-zinc-900 dark:text-[#ededed] mb-1.5">{tool.name}</h3>
-              <p className="text-xs text-zinc-500 dark:text-[#737373] leading-relaxed line-clamp-2">{tool.desc}</p>
+              <p className="text-xs text-zinc-500 dark:text-[#838383] leading-relaxed line-clamp-2">{tool.desc}</p>
             </button>
           )
         })}
@@ -80,7 +80,7 @@ export default function HomeDashboard({ onSelectTool }: HomeDashboardProps) {
         {filteredComingSoon.map((tool, idx) => {
           const Icon = tool.icon;
           return (
-            <div key={`soon-${idx}`} className="bg-zinc-50 dark:bg-[#0e0e0e] border border-dashed border-zinc-300 dark:border-[#262626] hover:border-zinc-400 dark:hover:border-[#404040] transition-colors duration-300 rounded-md p-6 flex flex-col text-left opacity-70 h-full relative overflow-hidden group">
+            <div key={`soon-${idx}`} className="bg-zinc-50 dark:bg-[#0e0e0e] border border-dashed border-zinc-300 dark:border-[#262626] hover:border-zinc-400 dark:hover:border-[#404040] transition-none rounded-md p-6 flex flex-col text-left opacity-70 h-full relative overflow-hidden group">
               <div className="flex items-start justify-between mb-4">
                 <div className="w-10 h-10 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] rounded-md flex items-center justify-center">
                   <Icon size={16} className="text-zinc-500 dark:text-[#555]" strokeWidth={1.5} />

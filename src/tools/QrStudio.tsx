@@ -17,14 +17,18 @@ export default function QrStudio() {
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      if (logoUrl) URL.revokeObjectURL(logoUrl);
-      const url = URL.createObjectURL(e.target.files[0]);
-      setLogoUrl(url);
+      // Use a base64 data: URI rather than a blob: URL. blob: URLs are scoped
+      // to this session - if embedded in an exported .svg's <image> href,
+      // the logo becomes a broken reference the moment the file is opened
+      // outside the app (blob URLs die with the page). A data: URI is
+      // self-contained and survives being saved to disk.
+      const reader = new FileReader();
+      reader.onload = () => setLogoUrl(reader.result as string);
+      reader.readAsDataURL(e.target.files[0]);
     }
   };
 
   const removeLogo = () => {
-    if (logoUrl) URL.revokeObjectURL(logoUrl);
     setLogoUrl(null);
   };
 
@@ -127,7 +131,7 @@ export default function QrStudio() {
 
         {/* Right Panel - Settings */}
         <div className="w-full md:w-80 bg-white dark:bg-[#141414] p-6 flex flex-col relative z-20">
-          <div className="flex items-center text-xs font-semibold text-zinc-500 dark:text-[#737373] uppercase tracking-wider mb-6">
+          <div className="flex items-center text-xs font-semibold text-zinc-500 dark:text-[#838383] uppercase tracking-wider mb-6">
             <Settings2 size={14} className="mr-2" /> Properties
           </div>
 
@@ -141,7 +145,7 @@ export default function QrStudio() {
                 onChange={(e) => setValue(e.target.value)}
                 placeholder="Enter URL or text..." 
                 rows={3}
-                className="w-full bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-300 dark:border-[#404040] rounded text-sm px-3 py-2 text-zinc-900 dark:text-[#ededed] focus:outline-none focus:border-zinc-500 dark:focus:border-[#737373] resize-none" 
+                className="w-full bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-300 dark:border-[#404040] rounded text-sm px-3 py-2 text-zinc-900 dark:text-[#ededed] focus:outline-none focus:border-zinc-500 dark:focus:border-[#838383] resize-none" 
               />
             </div>
             
@@ -153,7 +157,7 @@ export default function QrStudio() {
                 min={100}
                 max={2000}
                 onChange={(e) => setSize(Number(e.target.value))}
-                className="w-full bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-300 dark:border-[#404040] rounded text-sm px-3 py-2 text-zinc-900 dark:text-[#ededed] focus:outline-none focus:border-zinc-500 dark:focus:border-[#737373]" 
+                className="w-full bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-300 dark:border-[#404040] rounded text-sm px-3 py-2 text-zinc-900 dark:text-[#ededed] focus:outline-none focus:border-zinc-500 dark:focus:border-[#838383]" 
               />
             </div>
             
@@ -189,7 +193,7 @@ export default function QrStudio() {
               <select 
                 value={level}
                 onChange={(e) => setLevel(e.target.value as any)}
-                className="w-full bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-300 dark:border-[#404040] rounded text-sm px-3 py-2 text-zinc-900 dark:text-[#ededed] focus:outline-none focus:border-zinc-500 dark:focus:border-[#737373] appearance-none"
+                className="w-full bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-300 dark:border-[#404040] rounded text-sm px-3 py-2 text-zinc-900 dark:text-[#ededed] focus:outline-none focus:border-zinc-500 dark:focus:border-[#838383] appearance-none"
               >
                 <option value="L">Low (~7% recovery)</option>
                 <option value="M">Medium (~15% recovery)</option>
@@ -202,8 +206,8 @@ export default function QrStudio() {
               <label className="block text-xs font-semibold text-zinc-900 dark:text-[#ededed] mb-3">Custom Logo</label>
               
               {!logoUrl ? (
-                <label className="border border-dashed border-zinc-300 dark:border-[#404040] hover:border-zinc-400 dark:hover:border-[#737373] bg-zinc-50 dark:bg-[#0e0e0e] rounded-md flex flex-col items-center justify-center p-4 cursor-pointer transition-none">
-                  <UploadCloud size={16} className="text-zinc-500 dark:text-[#737373] mb-2" />
+                <label className="border border-dashed border-zinc-300 dark:border-[#404040] hover:border-zinc-400 dark:hover:border-[#838383] bg-zinc-50 dark:bg-[#0e0e0e] rounded-md flex flex-col items-center justify-center p-4 cursor-pointer transition-none">
+                  <UploadCloud size={16} className="text-zinc-500 dark:text-[#838383] mb-2" />
                   <span className="text-xs font-medium text-zinc-900 dark:text-[#ededed]">Upload Logo</span>
                   <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
                 </label>

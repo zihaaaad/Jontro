@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { UploadCloud, X, Download, Settings2, Scissors, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 // @ts-ignore
@@ -14,6 +14,13 @@ export default function VectorTracer() {
   // Advanced Settings
   const [colorLimit, setColorLimit] = useState(256);
   const [accuracy, setAccuracy] = useState(100);
+
+  // Mirrors previewUrl so the Escape key listener (bound once below) always
+  // revokes the *current* blob URL instead of the stale null it closed over at mount.
+  const previewUrlRef = useRef<string | null>(null);
+  useEffect(() => {
+    previewUrlRef.current = previewUrl;
+  }, [previewUrl]);
 
   const presets = [
     { id: 'custom', name: 'Advanced / Custom' },
@@ -43,7 +50,7 @@ export default function VectorTracer() {
 
   const removeFile = () => {
     setSelectedFile(null);
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
     setPreviewUrl(null);
     setSvgOutput(null);
   };
@@ -159,7 +166,7 @@ export default function VectorTracer() {
             <div className="relative w-full h-full flex items-center justify-center p-4">
               <button 
                 onClick={removeFile}
-                className="absolute top-4 right-4 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg transition-all duration-200 hover:scale-110 active:scale-95"
+                className="absolute top-4 right-4 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg transition-none active:scale-95"
                 title="Remove Image (Esc)"
               >
                 <X size={16} />
@@ -190,13 +197,13 @@ export default function VectorTracer() {
             <label 
               onDrop={handleDrop}
               onDragOver={handleDragOver}
-              className="flex-1 m-8 border border-dashed border-zinc-300 dark:border-[#404040] hover:border-zinc-400 dark:hover:border-[#737373] bg-zinc-50 hover:bg-zinc-100 dark:bg-[#0e0e0e] dark:hover:bg-[#1a1a1a] rounded-md flex flex-col items-center justify-center p-6 cursor-pointer transition-all duration-200"
+              className="flex-1 m-8 border border-dashed border-zinc-300 dark:border-[#404040] hover:border-zinc-400 dark:hover:border-[#838383] bg-zinc-50 hover:bg-zinc-100 dark:bg-[#0e0e0e] dark:hover:bg-[#1a1a1a] rounded-md flex flex-col items-center justify-center p-6 cursor-pointer transition-none"
             >
-              <UploadCloud size={32} strokeWidth={1.5} className="text-zinc-500 dark:text-[#737373] mb-4 transition-transform duration-300 hover:scale-110" />
+              <UploadCloud size={32} strokeWidth={1.5} className="text-zinc-500 dark:text-[#838383] mb-4" />
               <span className="text-sm font-medium text-zinc-900 dark:text-[#ededed] mb-1 text-center">
                 Drag Image here or click to browse
               </span>
-              <span className="text-xs text-zinc-500 dark:text-[#737373] text-center">
+              <span className="text-xs text-zinc-500 dark:text-[#838383] text-center">
                 Supports .png, .jpg, .jpeg
               </span>
               <input 
@@ -212,7 +219,7 @@ export default function VectorTracer() {
 
         {/* Right Panel - Settings */}
         <div className="w-full md:w-72 bg-white dark:bg-[#141414] p-6 flex flex-col z-20">
-          <div className="flex items-center text-xs font-semibold text-zinc-500 dark:text-[#737373] uppercase tracking-wider mb-6">
+          <div className="flex items-center text-xs font-semibold text-zinc-500 dark:text-[#838383] uppercase tracking-wider mb-6">
             <Settings2 size={14} className="mr-2" /> Parameters
           </div>
 
@@ -225,13 +232,13 @@ export default function VectorTracer() {
                   setPreset(e.target.value);
                   setSvgOutput(null); // Reset output when preset changes so user can re-trace
                 }}
-                className="w-full bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-300 dark:border-[#404040] rounded text-sm px-3 py-2 text-zinc-900 dark:text-[#ededed] focus:outline-none focus:border-zinc-500 dark:focus:border-[#737373] appearance-none"
+                className="w-full bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-300 dark:border-[#404040] rounded text-sm px-3 py-2 text-zinc-900 dark:text-[#ededed] focus:outline-none focus:border-zinc-500 dark:focus:border-[#838383] appearance-none"
               >
                 {presets.map(p => (
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
               </select>
-              <p className="text-[10px] text-zinc-500 dark:text-[#737373] mt-2">
+              <p className="text-[10px] text-zinc-500 dark:text-[#838383] mt-2">
                 Experiment with different presets to find the best look for your image.
               </p>
             </div>
@@ -269,10 +276,10 @@ export default function VectorTracer() {
               <button 
                 onClick={processVectorization}
                 disabled={!selectedFile || isProcessing}
-                className={`w-full py-2.5 rounded-md text-sm font-medium transition-all duration-200 flex items-center justify-center ${
+                className={`w-full py-2.5 rounded-md text-sm font-medium transition-none flex items-center justify-center ${
                   !selectedFile || isProcessing
-                    ? 'bg-zinc-100 dark:bg-[#262626] text-zinc-500 dark:text-[#737373] cursor-not-allowed'
-                    : 'bg-zinc-900 hover:bg-zinc-800 dark:bg-[#ededed] dark:hover:bg-white text-white dark:text-[#0e0e0e] hover:scale-[1.02] active:scale-[0.98]'
+                    ? 'bg-zinc-100 dark:bg-[#262626] text-zinc-500 dark:text-[#838383] cursor-not-allowed'
+                    : 'bg-zinc-900 hover:bg-zinc-800 dark:bg-[#ededed] dark:hover:bg-white text-white dark:text-[#0e0e0e] active:scale-[0.98]'
                 }`}
               >
                 <Scissors size={14} className={`mr-2 ${isProcessing ? 'animate-pulse' : ''}`} /> 
@@ -281,7 +288,7 @@ export default function VectorTracer() {
             ) : (
               <button 
                 onClick={downloadSvg}
-                className="w-full py-2.5 rounded-md text-sm font-medium transition-all duration-200 flex items-center justify-center bg-zinc-900 hover:bg-zinc-800 dark:bg-[#ededed] dark:hover:bg-white text-white dark:text-[#0e0e0e] hover:scale-[1.02] active:scale-[0.98]"
+                className="w-full py-2.5 rounded-md text-sm font-medium transition-none flex items-center justify-center bg-zinc-900 hover:bg-zinc-800 dark:bg-[#ededed] dark:hover:bg-white text-white dark:text-[#0e0e0e] active:scale-[0.98]"
               >
                 <Download size={14} className="mr-2" /> Download SVG
               </button>

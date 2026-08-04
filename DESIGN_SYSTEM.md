@@ -23,7 +23,7 @@ We are using the **Lucide** icon library.
 Buttons in Jontro follow a strict logic so you implicitly know what to click without thinking:
 
 *   **Primary Buttons (The "Do It" Buttons)**
-    *   *Examples:* `Start Extraction`, `Generate Password`, `Capture Screen`
+    *   *Examples:* `Start Bulk Extraction`, `Generate Password`, `Trace Image`
     *   *Design:* Bright `#ededed` background with dark `#0e0e0e` text. This inverse contrast heavily draws the eye. When you look at the screen, you instantly know where the "submit" action is.
 *   **Secondary Buttons (The "Helper" Actions)**
     *   *Examples:* `Copy to Clipboard`, `Add Task`
@@ -31,8 +31,8 @@ Buttons in Jontro follow a strict logic so you implicitly know what to click wit
 *   **Hover & Animation Physics**
     *   We deliberately used `transition-none` on interactive elements. Consumer web apps use slow, bouncy fades (300ms transitions). By removing transitions, Jontro buttons snap instantly. This creates a psychological effect: the app feels blazing fast, compiled, and hardware-accelerated.
 
-## 4. Typography (Inter)
-*   **The Font:** `Inter` is highly legible on computer screens.
+## 4. Typography (Native System Font Stack)
+*   **The Font:** `ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, ...` - each OS renders its own native UI font (San Francisco on macOS, Segoe UI on Windows). This replaced an earlier Google Fonts (`Inter`) import: loading a web font meant the app made a network request to `fonts.googleapis.com` on every launch, which directly contradicted the 0-cloud, offline-first architecture. The system stack is visually close to Inter's geometric, legible style while keeping the app's launch and rendering fully local.
 *   **Monospace Elements:** We use system monospace fonts (like `Consolas` or `Menlo`) specifically for generated passwords and OCR text. Monospace ensures that every character (like an `l` vs a `1` vs an `I`) takes up the exact same width, which is critical for security and reading extracted data.
 *   **Tracking:** For small category labels (like the "WORKSPACE" text in the sidebar), we use uppercase letters with wide tracking (`tracking-widest`). This is a classic UI trick to make tiny text readable and elegant.
 

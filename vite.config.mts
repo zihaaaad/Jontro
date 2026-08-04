@@ -6,6 +6,10 @@ import renderer from 'vite-plugin-electron-renderer'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Electron loads the packaged renderer via file://, so asset URLs must be
+  // relative to dist/index.html rather than root-absolute (the default '/'
+  // would try to resolve against the OS filesystem root and silently 404).
+  base: './',
   plugins: [
     react(), 
     tailwindcss(),
