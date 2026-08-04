@@ -1,0 +1,33 @@
+{
+  "whatsapp": "8801732109847",
+  "email": "zihad.connects@gmail.com",
+  "plans": [
+    {
+      "id": "monthly",
+      "name": "Monthly",
+      "noteText": "Billed every month",
+      "priceUsd": "$3.99",
+      "priceBdt": "৳149",
+      "unit": "/mo"
+    },
+    {
+      "id": "yearly",
+      "name": "Yearly",
+      "noteText": "Billed once a year",
+      "priceUsd": "$19.99",
+      "priceBdt": "৳799",
+      "unit": "/yr",
+      "badge": "Best Value",
+      "saveUsd": "Save 58% vs monthly",
+      "saveBdt": "Save 55% vs monthly"
+    },
+    {
+      "id": "lifetime",
+      "name": "Lifetime",
+      "noteText": "Pay once, own it forever",
+      "priceUsd": "$39.99",
+      "priceBdt": "৳1,499",
+      "unit": "once"
+    }
+  ]
+}

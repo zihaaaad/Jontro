@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jontro License Admin</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div id="login-screen">
+    <div class="login-box">
+      <h1>JONTRO ADMIN</h1>
+      <p>Sign in with the admin account to manage licenses.</p>
+      <input id="login-email" type="email" placeholder="Email" autocomplete="username" />
+      <input id="login-password" type="password" placeholder="Password" autocomplete="current-password" />
+      <button class="btn-primary" id="login-btn">Sign In</button>
+      <div id="error-msg"></div>
+    </div>
+  </div>
+
+  <div id="dashboard" class="hidden">
+    <header class="top">
+      <h1>JONTRO LICENSE ADMIN</h1>
+      <div class="who-row">
+        <span class="who" id="who"></span>
+        <button class="btn-secondary btn-sm" id="signout-btn">Sign Out</button>
+      </div>
+    </header>
+
+    <div class="card">
+      <h2>Create License</h2>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Customer Email</label>
+          <input id="new-email" type="email" placeholder="customer@example.com" />
+        </div>
+        <div class="form-field">
+          <label>Name (optional)</label>
+          <input id="new-name" type="text" placeholder="Full name" />
+        </div>
+        <div class="form-field">
+          <label>Plan</label>
+          <select id="new-plan">
+            <option value="monthly">Monthly</option>
+            <option value="yearly">Yearly</option>
+            <option value="lifetime">Lifetime</option>
+          </select>
+        </div>
+        <div class="form-field form-field-narrow">
+          <label>Device Limit</label>
+          <input id="new-device-limit" type="number" value="2" min="1" max="10" />
+        </div>
+        <button class="btn-primary btn-fixed" id="create-btn">Generate Key</button>
+      </div>
+      <div id="new-key-result" class="hidden"></div>
+    </div>
+
+    <div class="card">
+      <h2>All Licenses</h2>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Key</th>
+              <th>Email</th>
+              <th>Plan</th>
+              <th>Status</th>
+              <th>Devices</th>
+              <th>Expires</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="license-rows">
+            <tr><td colspan="7" class="dim">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

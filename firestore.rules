@@ -1,0 +1,42 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Only the admin panel (signed in with this exact account) can list,
+    // create, or delete licenses, or edit protected fields like status/plan.
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'zihad.connects@gmail.com';
+    }
+
+    match /licenses/{licenseId} {
+      // The license key IS the document ID (~20 random chars). Anyone who
+      // has the exact key can read their own doc - there is no separate
+      // "verify key" auth system. Nobody can enumerate the collection
+      // (allow list is admin-only below), so an unguessable key is the
+      // entire access-control model for reads.
+      allow get: if true;
+      allow list: if isAdmin();
+
+      allow create, delete: if isAdmin();
+
+      // The customer's app (unauthenticated) may only:
+      //   - append/remove itself from activatedDevices
+      //   - bump lastValidatedAt
+      // and only while keeping activatedDevices within the license's own
+      // deviceLimit. It can never touch status/plan/expiresAt/deviceLimit -
+      // so even a compromised/hacked client can't self-upgrade, extend its
+      // own expiry, or un-revoke itself. The admin panel (isAdmin()) can
+      // update anything.
+      allow update: if isAdmin() || (
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['activatedDevices', 'lastValidatedAt']) &&
+        request.resource.data.status == resource.data.status &&
+        request.resource.data.plan == resource.data.plan &&
+        request.resource.data.expiresAt == resource.data.expiresAt &&
+        request.resource.data.deviceLimit == resource.data.deviceLimit &&
+        request.resource.data.activatedDevices.size() <= resource.data.deviceLimit
+      );
+    }
+  }
+}

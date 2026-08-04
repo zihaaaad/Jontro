@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { 
+import {
   FileAudio, Image as ImageIcon, Files, ScanText, ListTodo, KeyRound,
-  ChevronRight, LayoutDashboard, Sun, Moon, Search, Cpu, Activity
+  ChevronRight, LayoutDashboard, Sun, Moon, Search, Cpu, Activity,
+  PenTool, QrCode, Crown, Lock
 } from 'lucide-react';
 import VideoConverter from './tools/VideoConverter';
 import TodoList from './tools/TodoList';
@@ -12,10 +13,15 @@ import OcrTool from './tools/OcrTool';
 import QrStudio from './tools/QrStudio';
 import HomeDashboard from './tools/HomeDashboard';
 import VectorTracer from './tools/VectorTracer';
+import LicenseActivation from './tools/LicenseActivation';
+import ErrorBoundary from './components/ErrorBoundary';
+import PremiumGate from './lib/license/PremiumGate';
+import { useLicense } from './lib/license/LicenseContext';
 import { Toaster, toast } from 'sonner';
 import pkg from '../package.json';
 
 function App() {
+  const { isPremium } = useLicense();
   const [activeTab, setActiveTab] = useState('home');
   const [isBooting, setIsBooting] = useState(true);
   const [bootLogs, setBootLogs] = useState<string[]>([]);
@@ -102,14 +108,14 @@ function App() {
   }, []);
 
   const tools = [
-    { id: 'video-converter', name: 'Video to Audio', icon: FileAudio },
-    { id: 'image-resizer', name: 'Image Resizer', icon: ImageIcon },
-    { id: 'vector-tracer', name: 'Vector Tracer', icon: ImageIcon },
-    { id: 'pdf-tools', name: 'PDF Tools', icon: Files },
-    { id: 'ocr-tool', name: 'Screenshot & OCR', icon: ScanText },
-    { id: 'qr-studio', name: 'QR Studio', icon: ImageIcon },
-    { id: 'todo-list', name: 'To-Do List', icon: ListTodo },
-    { id: 'password-gen', name: 'Password Gen', icon: KeyRound },
+    { id: 'video-converter', name: 'Video to Audio', icon: FileAudio, premium: true },
+    { id: 'image-resizer', name: 'Image Resizer', icon: ImageIcon, premium: true },
+    { id: 'vector-tracer', name: 'Vector Tracer', icon: PenTool, premium: true },
+    { id: 'pdf-tools', name: 'PDF Tools', icon: Files, premium: true },
+    { id: 'ocr-tool', name: 'Screenshot & OCR', icon: ScanText, premium: true },
+    { id: 'qr-studio', name: 'QR Studio', icon: QrCode, premium: false },
+    { id: 'todo-list', name: 'To-Do List', icon: ListTodo, premium: false },
+    { id: 'password-gen', name: 'Password Gen', icon: KeyRound, premium: false },
   ];
 
   if (isBooting) {
@@ -123,7 +129,7 @@ function App() {
         
         <div className="w-64 h-24 bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] rounded-md p-3 flex flex-col justify-end overflow-hidden shadow-inner">
           {bootLogs.map((log, i) => (
-            <div key={i} className="text-[10px] font-mono text-zinc-500 dark:text-[#737373] animate-in slide-in-from-bottom-2 fade-in duration-200 leading-tight">
+            <div key={i} className="text-[10px] font-mono text-zinc-500 dark:text-[#838383] animate-in slide-in-from-bottom-2 fade-in duration-200 leading-tight">
               &gt; {log}
             </div>
           ))}
@@ -150,31 +156,34 @@ function App() {
             </div>
             <h1 className="text-sm font-semibold text-zinc-900 dark:text-[#ededed] tracking-wide hidden md:block">JONTRO</h1>
           </div>
-          <button 
+          <button
             onClick={() => setIsDark(!isDark)}
-            className="hidden md:flex p-1.5 rounded-md text-zinc-500 hover:text-zinc-900 dark:text-[#737373] dark:hover:text-[#ededed] hover:bg-zinc-100 dark:hover:bg-[#262626] transition-all duration-200 hover:scale-110 active:scale-95"
+            title={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+            aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+            className="hidden md:flex p-1.5 rounded-md text-zinc-500 hover:text-zinc-900 dark:text-[#838383] dark:hover:text-[#ededed] hover:bg-zinc-100 dark:hover:bg-[#262626] transition-none active:scale-95"
           >
             {isDark ? <Sun size={14} className="animate-in fade-in spin-in-12" /> : <Moon size={14} className="animate-in fade-in spin-in-12" />}
           </button>
         </div>
-        
+
         {/* Navigation */}
         <div className="flex-1 py-4 overflow-y-auto custom-scrollbar">
           <div className="px-5 mb-3 hidden md:block">
-            <span className="text-[10px] font-semibold text-zinc-500 dark:text-[#737373] uppercase tracking-widest">Workspace</span>
+            <span className="text-[10px] font-semibold text-zinc-500 dark:text-[#838383] uppercase tracking-widest">Workspace</span>
           </div>
-          
+
           <div className="space-y-0.5 px-2 md:px-3">
             <button
               onClick={() => setActiveTab('home')}
               title="Dashboard"
-              className={`w-full flex items-center justify-center md:justify-start px-3 py-3 md:py-2 rounded-md text-sm transition-all duration-200 hover:translate-x-1 mb-4 ${
+              aria-label="Dashboard"
+              className={`w-full flex items-center justify-center md:justify-start px-3 py-3 md:py-2 rounded-md text-sm transition-none mb-4 ${
                 activeTab === 'home' 
                   ? 'bg-zinc-100 text-zinc-900 dark:bg-[#262626] dark:text-[#ededed]' 
                   : 'hover:bg-zinc-50 text-zinc-600 hover:text-zinc-900 dark:hover:bg-[#1f1f1f] dark:text-[#a3a3a3] dark:hover:text-[#ededed]'
               }`}
             >
-              <LayoutDashboard size={16} className={`md:mr-3 shrink-0 ${activeTab === 'home' ? 'text-zinc-900 dark:text-[#ededed]' : 'text-zinc-500 dark:text-[#737373]'}`} strokeWidth={activeTab === 'home' ? 2 : 1.5} />
+              <LayoutDashboard size={16} className={`md:mr-3 shrink-0 ${activeTab === 'home' ? 'text-zinc-900 dark:text-[#ededed]' : 'text-zinc-500 dark:text-[#838383]'}`} strokeWidth={activeTab === 'home' ? 2 : 1.5} />
               <span className={`hidden md:block ${activeTab === 'home' ? 'font-medium' : 'font-normal'}`}>Dashboard</span>
             </button>
 
@@ -187,22 +196,45 @@ function App() {
                   key={tool.id}
                   onClick={() => setActiveTab(tool.id)}
                   title={tool.name}
-                  className={`w-full flex items-center justify-center md:justify-start px-3 py-3 md:py-2 rounded-md text-sm transition-all duration-200 hover:translate-x-1 ${
+                  aria-label={tool.name}
+                  className={`w-full flex items-center justify-center md:justify-start px-3 py-3 md:py-2 rounded-md text-sm transition-none ${
                     isActive 
                       ? 'bg-zinc-100 text-zinc-900 dark:bg-[#262626] dark:text-[#ededed]' 
                       : 'hover:bg-zinc-50 text-zinc-600 hover:text-zinc-900 dark:hover:bg-[#1f1f1f] dark:text-[#a3a3a3] dark:hover:text-[#ededed]'
                   }`}
                 >
-                  <Icon size={16} className={`md:mr-3 shrink-0 ${isActive ? 'text-zinc-900 dark:text-[#ededed]' : 'text-zinc-500 dark:text-[#737373]'}`} strokeWidth={isActive ? 2 : 1.5} />
-                  <span className={`hidden md:block ${isActive ? 'font-medium' : 'font-normal'}`}>{tool.name}</span>
+                  <span className="relative md:mr-3 shrink-0">
+                    <Icon size={16} className={isActive ? 'text-zinc-900 dark:text-[#ededed]' : 'text-zinc-500 dark:text-[#838383]'} strokeWidth={isActive ? 2 : 1.5} />
+                    {tool.premium && !isPremium && (
+                      <Lock size={9} strokeWidth={2.5} className="md:hidden absolute -top-1.5 -right-1.5 bg-white dark:bg-[#141414] text-zinc-400 dark:text-[#555] rounded-full p-0.5 box-content" />
+                    )}
+                  </span>
+                  <span className={`hidden md:block flex-1 text-left ${isActive ? 'font-medium' : 'font-normal'}`}>{tool.name}</span>
+                  {tool.premium && !isPremium && (
+                    <Lock size={11} className="hidden md:block text-zinc-400 dark:text-[#555] shrink-0" />
+                  )}
                 </button>
               )
             })}
+
+            <button
+              onClick={() => setActiveTab('license')}
+              title="License"
+              aria-label="License"
+              className={`w-full flex items-center justify-center md:justify-start px-3 py-3 md:py-2 rounded-md text-sm transition-none mt-4 border ${
+                activeTab === 'license'
+                  ? 'bg-zinc-100 border-zinc-200 text-zinc-900 dark:bg-[#262626] dark:border-[#404040] dark:text-[#ededed]'
+                  : 'border-dashed border-zinc-200 dark:border-[#262626] hover:bg-zinc-50 text-zinc-600 hover:text-zinc-900 dark:hover:bg-[#1f1f1f] dark:text-[#a3a3a3] dark:hover:text-[#ededed]'
+              }`}
+            >
+              <Crown size={16} className={`md:mr-3 shrink-0 ${activeTab === 'license' ? 'text-zinc-900 dark:text-[#ededed]' : 'text-blue-500'}`} strokeWidth={1.5} />
+              <span className={`hidden md:block ${activeTab === 'license' ? 'font-medium' : 'font-normal'}`}>{isPremium ? 'License' : 'Upgrade'}</span>
+            </button>
           </div>
         </div>
-        
+
         {/* Footer */}
-        <div className="px-5 py-4 border-t border-zinc-200 dark:border-[#262626] flex flex-col gap-2 text-xs text-zinc-500 dark:text-[#737373]">
+        <div className="px-5 py-4 border-t border-zinc-200 dark:border-[#262626] flex flex-col gap-2 text-xs text-zinc-500 dark:text-[#838383]">
           <div className="hidden md:flex items-center justify-between">
             <span className="font-semibold text-zinc-900 dark:text-[#a3a3a3]">v{pkg.version}</span>
             <div className="flex items-center">
@@ -228,16 +260,18 @@ function App() {
       <div className="flex-1 flex flex-col bg-zinc-50 dark:bg-[#0e0e0e]">
         {/* Header Breadcrumbs */}
         <div className="h-14 border-b border-zinc-200 dark:border-[#262626] flex items-center justify-between px-8 bg-zinc-50 dark:bg-[#0e0e0e]">
-          <div className="flex items-center text-xs text-zinc-500 dark:text-[#737373]">
+          <div className="flex items-center text-xs text-zinc-500 dark:text-[#838383]">
             <span>Workspace</span>
             <ChevronRight size={12} className="mx-2" />
             <span className="text-zinc-900 dark:text-[#ededed]">
-              {activeTab === 'home' ? 'Dashboard' : tools.find(t => t.id === activeTab)?.name}
+              {activeTab === 'home' ? 'Dashboard' : activeTab === 'license' ? 'License' : tools.find(t => t.id === activeTab)?.name}
             </span>
           </div>
-          <button 
+          <button
             onClick={() => setIsDark(!isDark)}
-            className="md:hidden flex p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:text-[#737373] dark:hover:text-[#ededed] bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] transition-all duration-200 active:scale-95"
+            title={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+            aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+            className="md:hidden flex p-2 rounded-md text-zinc-500 hover:text-zinc-900 dark:text-[#838383] dark:hover:text-[#ededed] bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] transition-none active:scale-95"
           >
             {isDark ? <Sun size={14} className="animate-in fade-in spin-in-12" /> : <Moon size={14} className="animate-in fade-in spin-in-12" />}
           </button>
@@ -246,15 +280,28 @@ function App() {
         {/* Workspace */}
         <div className="flex-1 p-4 md:p-8 overflow-y-auto">
           <div className="max-w-4xl mx-auto h-full">
-            {activeTab === 'home' && <HomeDashboard onSelectTool={setActiveTab} />}
-            {activeTab === 'video-converter' && <VideoConverter />}
-            {activeTab === 'todo-list' && <TodoList />}
-            {activeTab === 'password-gen' && <PasswordGen />}
-            {activeTab === 'image-resizer' && <ImageResizer />}
-            {activeTab === 'vector-tracer' && <VectorTracer />}
-            { activeTab === 'pdf-tools' && <PdfTools /> }
-            { activeTab === 'ocr-tool' && <OcrTool /> }
-            { activeTab === 'qr-studio' && <QrStudio /> }
+            <ErrorBoundary key={activeTab}>
+              {activeTab === 'home' && <HomeDashboard onSelectTool={setActiveTab} />}
+              {activeTab === 'license' && <LicenseActivation />}
+              {activeTab === 'todo-list' && <TodoList />}
+              {activeTab === 'password-gen' && <PasswordGen />}
+              {activeTab === 'qr-studio' && <QrStudio />}
+              {activeTab === 'video-converter' && (
+                <PremiumGate toolName="Video to Audio" onActivate={() => setActiveTab('license')}><VideoConverter /></PremiumGate>
+              )}
+              {activeTab === 'image-resizer' && (
+                <PremiumGate toolName="Image Resizer" onActivate={() => setActiveTab('license')}><ImageResizer /></PremiumGate>
+              )}
+              {activeTab === 'vector-tracer' && (
+                <PremiumGate toolName="Vector Tracer" onActivate={() => setActiveTab('license')}><VectorTracer /></PremiumGate>
+              )}
+              {activeTab === 'pdf-tools' && (
+                <PremiumGate toolName="PDF Tools" onActivate={() => setActiveTab('license')}><PdfTools /></PremiumGate>
+              )}
+              {activeTab === 'ocr-tool' && (
+                <PremiumGate toolName="Screenshot & OCR" onActivate={() => setActiveTab('license')}><OcrTool /></PremiumGate>
+              )}
+            </ErrorBoundary>
           </div>
         </div>
       </div>
@@ -264,20 +311,20 @@ function App() {
         <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] bg-zinc-900/50 dark:bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={(e) => { if (e.target === e.currentTarget) setShowPalette(false); }}>
           <div className="w-full max-w-lg bg-white dark:bg-[#141414] border border-zinc-200 dark:border-[#262626] rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col">
             <div className="flex items-center px-4 py-3 border-b border-zinc-200 dark:border-[#262626]">
-              <Search size={18} className="text-zinc-400 dark:text-[#737373] mr-3" />
+              <Search size={18} className="text-zinc-400 dark:text-[#838383] mr-3" />
               <input 
                 autoFocus
                 type="text" 
                 placeholder="Search tools... (e.g., ocr, video)"
                 value={paletteQuery}
                 onChange={e => setPaletteQuery(e.target.value)}
-                className="flex-1 bg-transparent border-none text-zinc-900 dark:text-[#ededed] text-sm focus:outline-none placeholder-zinc-400 dark:placeholder-[#737373]"
+                className="flex-1 bg-transparent border-none text-zinc-900 dark:text-[#ededed] text-sm focus:outline-none placeholder-zinc-400 dark:placeholder-[#838383]"
               />
               <div className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-[#262626] text-[10px] text-zinc-500 dark:text-[#a3a3a3] font-medium border border-zinc-200 dark:border-[#404040]">ESC</div>
             </div>
             
             <div className="max-h-[60vh] overflow-y-auto p-2 custom-scrollbar">
-              {[{ id: 'home', name: 'Home Dashboard', icon: LayoutDashboard }, ...tools]
+              {[{ id: 'home', name: 'Home Dashboard', icon: LayoutDashboard }, ...tools, { id: 'license', name: isPremium ? 'License' : 'Upgrade', icon: Crown }]
                 .filter(t => t.name.toLowerCase().includes(paletteQuery.toLowerCase()))
                 .map(tool => {
                   const Icon = tool.icon;
@@ -285,10 +332,10 @@ function App() {
                     <button
                       key={tool.id}
                       onClick={() => { setActiveTab(tool.id); setShowPalette(false); setPaletteQuery(''); }}
-                      className="w-full flex items-center px-3 py-3 rounded-lg hover:bg-zinc-100 dark:hover:bg-[#262626] group transition-all duration-200 text-left active:scale-[0.98]"
+                      className="w-full flex items-center px-3 py-3 rounded-lg hover:bg-zinc-100 dark:hover:bg-[#262626] group transition-none text-left active:scale-[0.98]"
                     >
                       <div className="w-8 h-8 rounded-md bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-200 dark:border-[#262626] flex items-center justify-center mr-3 group-hover:border-zinc-300 dark:group-hover:border-[#404040] transition-colors">
-                        <Icon size={14} className="text-zinc-500 dark:text-[#737373] group-hover:text-zinc-900 dark:group-hover:text-[#ededed]" />
+                        <Icon size={14} className="text-zinc-500 dark:text-[#838383] group-hover:text-zinc-900 dark:group-hover:text-[#ededed]" />
                       </div>
                       <span className="text-sm font-medium text-zinc-700 dark:text-[#a3a3a3] group-hover:text-zinc-900 dark:group-hover:text-[#ededed] transition-colors">{tool.name}</span>
                     </button>
