@@ -10,6 +10,7 @@ export function LicenseProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<LicenseState['status']>('checking');
   const [plan, setPlan] = useState<LicensePlan | null>(null);
   const [activeKey, setActiveKey] = useState<string | null>(null);
+  const [expiresAt, setExpiresAt] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -22,6 +23,7 @@ export function LicenseProvider({ children }: { children: ReactNode }) {
         if (result && result.status === 'active') {
           setPlan(result.plan);
           setActiveKey(result.key);
+          setExpiresAt(result.expiresAt);
           setStatus('active');
         } else {
           setStatus('inactive');
@@ -37,6 +39,7 @@ export function LicenseProvider({ children }: { children: ReactNode }) {
       const result = await checkLicense(key);
       setPlan(result.plan);
       setActiveKey(result.key);
+      setExpiresAt(result.expiresAt);
       setStatus('active');
       return true;
     } catch (err) {
@@ -56,12 +59,13 @@ export function LicenseProvider({ children }: { children: ReactNode }) {
     } finally {
       setPlan(null);
       setActiveKey(null);
+      setExpiresAt(null);
       setStatus('inactive');
     }
   }, [activeKey]);
 
   const value: LicenseState = {
-    status, plan, activeKey, error, activate, deactivate,
+    status, plan, activeKey, expiresAt, error, activate, deactivate,
     isPremium: status === 'active',
   };
 

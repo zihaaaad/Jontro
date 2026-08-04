@@ -18,6 +18,9 @@ declare global {
       // Auto Updater
       onUpdateAvailable: (callback: (version: string) => void) => void;
       onUpdateDownloaded: (callback: () => void) => void;
+      onUpdateNotAvailable: (callback: () => void) => void;
+      onUpdateError: (callback: (message: string) => void) => void;
+      checkForUpdates: () => void;
       installUpdate: () => void;
 
       // Native Notifications

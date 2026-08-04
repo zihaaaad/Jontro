@@ -93,6 +93,14 @@ app.whenReady().then(() => {
     mainWindow?.webContents.send('updater:update-downloaded');
   });
 
+  autoUpdater.on('update-not-available', () => {
+    mainWindow?.webContents.send('updater:update-not-available');
+  });
+
+  autoUpdater.on('error', (err) => {
+    mainWindow?.webContents.send('updater:error', err.message);
+  });
+
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
@@ -116,6 +124,19 @@ app.whenReady().then(() => {
 
 ipcMain.handle('updater:quitAndInstall', () => {
   autoUpdater.quitAndInstall();
+});
+
+ipcMain.handle('updater:checkForUpdates', () => {
+  if (!app.isPackaged) {
+    // electron-updater has no feed URL to hit in dev (no packaged
+    // app-update.yml), so report "no update" immediately instead of
+    // letting it throw or hang the button forever.
+    mainWindow?.webContents.send('updater:update-not-available');
+    return;
+  }
+  autoUpdater.checkForUpdates().catch((err) => {
+    mainWindow?.webContents.send('updater:error', err.message);
+  });
 });
 
 app.on('window-all-closed', () => {

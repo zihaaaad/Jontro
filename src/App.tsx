@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   FileAudio, Image as ImageIcon, Files, ScanText, ListTodo, KeyRound,
   ChevronRight, LayoutDashboard, Sun, Moon, Search, Cpu, Activity,
-  PenTool, QrCode, Crown, Lock
+  PenTool, QrCode, Crown, Lock, RefreshCw, WifiOff
 } from 'lucide-react';
 import VideoConverter from './tools/VideoConverter';
 import TodoList from './tools/TodoList';
@@ -28,7 +28,9 @@ function App() {
   const [telemetry, setTelemetry] = useState({ cpu: '0', ram: '0', ramTotal: '0' });
   const [showPalette, setShowPalette] = useState(false);
   const [paletteQuery, setPaletteQuery] = useState('');
-  
+  const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
   const [isDark, setIsDark] = useState(() => {
     const saved = localStorage.getItem('jontro-theme');
     if (saved) return saved === 'dark';
@@ -86,8 +88,20 @@ function App() {
   }, []);
 
   useEffect(() => {
+    const goOnline = () => setIsOnline(true);
+    const goOffline = () => setIsOnline(false);
+    window.addEventListener('online', goOnline);
+    window.addEventListener('offline', goOffline);
+    return () => {
+      window.removeEventListener('online', goOnline);
+      window.removeEventListener('offline', goOffline);
+    };
+  }, []);
+
+  useEffect(() => {
     if (window.electronAPI && window.electronAPI.onUpdateAvailable) {
       window.electronAPI.onUpdateAvailable((version) => {
+        setIsCheckingUpdate(false);
         toast.info(`Version ${version} is downloading...`, {
           description: "Jontro is automatically fetching the latest update in the background.",
           duration: 10000,
@@ -95,6 +109,7 @@ function App() {
       });
 
       window.electronAPI.onUpdateDownloaded(() => {
+        setIsCheckingUpdate(false);
         toast.success("Update Ready to Install!", {
           description: "The new version has been downloaded successfully.",
           duration: Infinity,
@@ -104,8 +119,24 @@ function App() {
           }
         });
       });
+
+      window.electronAPI.onUpdateNotAvailable(() => {
+        setIsCheckingUpdate(false);
+        toast.success("You're up to date", { description: `Jontro v${pkg.version} is the latest version.` });
+      });
+
+      window.electronAPI.onUpdateError((message) => {
+        setIsCheckingUpdate(false);
+        toast.error("Couldn't check for updates", { description: message });
+      });
     }
   }, []);
+
+  const handleCheckForUpdates = () => {
+    if (!window.electronAPI || isCheckingUpdate) return;
+    setIsCheckingUpdate(true);
+    window.electronAPI.checkForUpdates();
+  };
 
   const tools = [
     { id: 'video-converter', name: 'Video to Audio', icon: FileAudio, premium: true },
@@ -236,10 +267,22 @@ function App() {
         {/* Footer */}
         <div className="px-5 py-4 border-t border-zinc-200 dark:border-[#262626] flex flex-col gap-2 text-xs text-zinc-500 dark:text-[#838383]">
           <div className="hidden md:flex items-center justify-between">
-            <span className="font-semibold text-zinc-900 dark:text-[#a3a3a3]">v{pkg.version}</span>
-            <div className="flex items-center">
-              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-2 animate-pulse"></div>
-              <span>Online</span>
+            <button
+              onClick={handleCheckForUpdates}
+              disabled={isCheckingUpdate || !window.electronAPI}
+              title={window.electronAPI ? "Check for updates" : "Updates are only available in the installed app"}
+              className="flex items-center gap-1.5 font-semibold text-zinc-900 dark:text-[#a3a3a3] hover:text-blue-500 dark:hover:text-blue-400 disabled:hover:text-zinc-900 dark:disabled:hover:text-[#a3a3a3] transition-none disabled:cursor-default"
+            >
+              <RefreshCw size={10} className={isCheckingUpdate ? 'animate-spin' : ''} />
+              v{pkg.version}
+            </button>
+            <div className="flex items-center" title={isOnline ? 'Connected to the internet' : 'No internet connection - offline tools still work'}>
+              {isOnline ? (
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-2 animate-pulse"></div>
+              ) : (
+                <WifiOff size={10} className="mr-1.5 text-zinc-400 dark:text-[#666]" />
+              )}
+              <span>{isOnline ? 'Online' : 'Offline'}</span>
             </div>
           </div>
           

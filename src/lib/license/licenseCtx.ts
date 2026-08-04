@@ -5,6 +5,7 @@ export interface LicenseState {
   status: 'checking' | 'inactive' | 'active' | 'error';
   plan: LicensePlan | null;
   activeKey: string | null;
+  expiresAt: number | null;
   error: string | null;
   activate: (key: string) => Promise<boolean>;
   deactivate: () => Promise<void>;

@@ -11,7 +11,7 @@ import pricing from '../../docs/pricing.json';
 const PLANS = pricing.plans;
 
 export default function LicenseActivation() {
-  const { isPremium, plan, status, activate, deactivate, error } = useLicense();
+  const { isPremium, plan, status, expiresAt, activate, deactivate, error } = useLicense();
   const [key, setKey] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -56,7 +56,22 @@ export default function LicenseActivation() {
               </div>
               <div>
                 <p className="text-sm font-medium text-zinc-900 dark:text-[#ededed] capitalize">{plan} plan active</p>
-                <p className="text-xs text-zinc-500 dark:text-[#838383]">All premium tools are unlocked on this device.</p>
+                <p className="text-xs text-zinc-500 dark:text-[#838383]">
+                  {expiresAt === null
+                    ? 'All premium tools are unlocked on this device, forever.'
+                    : (() => {
+                        const daysLeft = Math.ceil((expiresAt - Date.now()) / (24 * 60 * 60 * 1000));
+                        const dateStr = new Date(expiresAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+                        return (
+                          <>
+                            All premium tools are unlocked on this device.{' '}
+                            <span className={daysLeft <= 7 ? 'text-amber-600 dark:text-amber-400 font-medium' : ''}>
+                              {daysLeft <= 0 ? `Expired ${dateStr}` : `Renews/expires ${dateStr} (${daysLeft} day${daysLeft === 1 ? '' : 's'} left)`}
+                            </span>
+                          </>
+                        );
+                      })()}
+                </p>
               </div>
             </div>
             <button
