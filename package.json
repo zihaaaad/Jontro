@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "clean": "node scripts/clean.mjs",
-    "build": "npm run clean && tsc -b && vite build && electron-builder",
+    "build": "npm run clean && tsc -b && vite build && electron-builder --publish never",
     "lint": "oxlint",
     "preview": "vite preview",
     "fetch:tessdata": "node scripts/fetch-tessdata.mjs"
