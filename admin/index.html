@@ -4,32 +4,64 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Jontro License Admin</title>
+  
+  <!-- Google Fonts: Inter and Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
+  <!-- Ambient Glows for Login -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
   <div id="login-screen">
-    <div class="login-box">
-      <h1>JONTRO ADMIN</h1>
+    <div class="login-box glass-panel">
+      <div class="logo-container">
+        <i data-lucide="shield-check" class="logo-icon"></i>
+        <h1 class="gradient-text">JONTRO ADMIN</h1>
+      </div>
       <p>Sign in with the admin account to manage licenses.</p>
-      <input id="login-email" type="email" placeholder="Email" autocomplete="username" />
-      <input id="login-password" type="password" placeholder="Password" autocomplete="current-password" />
-      <button class="btn-primary" id="login-btn">Sign In</button>
+      
+      <div class="input-wrapper">
+        <i data-lucide="mail" class="input-icon"></i>
+        <input id="login-email" type="email" placeholder="Email" autocomplete="username" />
+      </div>
+      
+      <div class="input-wrapper">
+        <i data-lucide="lock" class="input-icon"></i>
+        <input id="login-password" type="password" placeholder="Password" autocomplete="current-password" />
+      </div>
+      
+      <button class="btn-primary" id="login-btn">
+        <i data-lucide="log-in" class="btn-icon"></i> Sign In
+      </button>
       <div id="error-msg"></div>
     </div>
   </div>
 
   <div id="dashboard" class="hidden">
     <header class="top">
-      <h1>JONTRO LICENSE ADMIN</h1>
+      <div class="logo-container">
+        <i data-lucide="shield-check" class="logo-icon"></i>
+        <h1 class="gradient-text">JONTRO LICENSE ADMIN</h1>
+      </div>
       <div class="who-row">
         <span class="who" id="who"></span>
-        <button class="btn-secondary btn-sm" id="signout-btn">Sign Out</button>
+        <button class="btn-secondary btn-sm" id="signout-btn">
+          <i data-lucide="log-out" class="btn-icon"></i> Sign Out
+        </button>
       </div>
     </header>
 
-    <div class="card">
-      <h2>Create License</h2>
+    <div class="card glass-panel">
+      <h2><i data-lucide="plus-circle" class="header-icon"></i> Create License</h2>
       <div class="form-row">
         <div class="form-field">
           <label>Customer Email</label>
@@ -51,13 +83,15 @@
           <label>Device Limit</label>
           <input id="new-device-limit" type="number" value="2" min="1" max="10" />
         </div>
-        <button class="btn-primary btn-fixed" id="create-btn">Generate Key</button>
+        <button class="btn-primary btn-fixed" id="create-btn">
+          <i data-lucide="key" class="btn-icon"></i> Generate Key
+        </button>
       </div>
       <div id="new-key-result" class="hidden"></div>
     </div>
 
-    <div class="card">
-      <h2>All Licenses</h2>
+    <div class="card glass-panel">
+      <h2><i data-lucide="users" class="header-icon"></i> All Licenses</h2>
       <div class="table-scroll">
         <table>
           <thead>
@@ -80,5 +114,9 @@
   </div>
 
   <script type="module" src="app.js"></script>
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+  </script>
 </body>
 </html>

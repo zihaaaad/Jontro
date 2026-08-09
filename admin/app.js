@@ -119,29 +119,33 @@ async function loadLicenses() {
     `;
 
     const actionsCell = tr.querySelector('.row-actions');
-    actionsCell.appendChild(makeButton('Copy Key', 'btn-secondary btn-sm', () => {
+    actionsCell.appendChild(makeButton('copy', 'Copy Key', 'btn-secondary btn-sm', () => {
       navigator.clipboard.writeText(key);
     }));
 
     if (data.status === 'active') {
-      actionsCell.appendChild(makeButton('Revoke', 'btn-danger btn-sm', () => setStatus(key, 'revoked')));
+      actionsCell.appendChild(makeButton('ban', 'Revoke', 'btn-danger btn-sm', () => setStatus(key, 'revoked')));
     } else {
-      actionsCell.appendChild(makeButton('Reactivate', 'btn-secondary btn-sm', () => setStatus(key, 'active')));
+      actionsCell.appendChild(makeButton('refresh-cw', 'Reactivate', 'btn-secondary btn-sm', () => setStatus(key, 'active')));
     }
 
     if (deviceCount > 0) {
-      actionsCell.appendChild(makeButton('Clear Devices', 'btn-secondary btn-sm', () => clearDevices(key)));
+      actionsCell.appendChild(makeButton('monitor-off', 'Clear Devices', 'btn-secondary btn-sm', () => clearDevices(key)));
     }
 
-    actionsCell.appendChild(makeButton('Delete', 'btn-danger btn-sm', () => removeLicense(key)));
+    actionsCell.appendChild(makeButton('trash-2', 'Delete', 'btn-danger btn-sm', () => removeLicense(key)));
 
     rowsEl.appendChild(tr);
   });
+  
+  if (window.lucide) {
+    window.lucide.createIcons();
+  }
 }
 
-function makeButton(label, className, onClick) {
+function makeButton(iconName, label, className, onClick) {
   const btn = document.createElement('button');
-  btn.textContent = label;
+  btn.innerHTML = `<i data-lucide="${iconName}" class="btn-icon"></i> ${label}`;
   btn.className = className;
   btn.addEventListener('click', onClick);
   return btn;
