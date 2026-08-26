@@ -71,17 +71,44 @@ export function getDeviceId(): string {
   return id;
 }
 
-function readCache(): (LicenseCheckResult & { cachedAt: number }) | null {
+// The offline grace period only means anything if the cache can't just be
+// hand-written in DevTools to claim "active/lifetime" with no real
+// activation ever happening. This signs the cache payload (bound to this
+// device's id) so a forged localStorage entry fails verification and falls
+// through to a real online check instead of silently granting access.
+// Note: this is a tamper-detection speed bump, not a cryptographic
+// guarantee - the source is public, so it stops casual/copy-pasted
+// tampering, not a determined attacker willing to read this file. Real
+// enforcement still lives server-side in the Firestore transaction.
+const CACHE_SIGNING_SALT = 'jontro-license-cache-v1';
+
+type SignedCachePayload = LicenseCheckResult & { cachedAt: number; deviceId: string };
+
+async function signPayload(payload: SignedCachePayload): Promise<string> {
+  const bytes = new TextEncoder().encode(CACHE_SIGNING_SALT + JSON.stringify(payload));
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function readCache(deviceId: string): Promise<(LicenseCheckResult & { cachedAt: number }) | null> {
   try {
     const raw = localStorage.getItem(LICENSE_CACHE_KEY);
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    const { sig, ...payload } = parsed;
+    if (typeof sig !== 'string' || payload.deviceId !== deviceId) return null;
+    const expectedSig = await signPayload(payload);
+    if (sig !== expectedSig) return null;
+    return payload;
   } catch {
     return null;
   }
 }
 
-function writeCache(result: LicenseCheckResult) {
-  localStorage.setItem(LICENSE_CACHE_KEY, JSON.stringify({ ...result, cachedAt: Date.now() }));
+async function writeCache(result: LicenseCheckResult, deviceId: string) {
+  const payload: SignedCachePayload = { ...result, cachedAt: Date.now(), deviceId };
+  const sig = await signPayload(payload);
+  localStorage.setItem(LICENSE_CACHE_KEY, JSON.stringify({ ...payload, sig }));
 }
 
 export function clearLicenseCache() {
@@ -121,12 +148,18 @@ export async function checkLicenseOnline(key: string, deviceId: string): Promise
 
     const devices = license.activatedDevices || [];
     const alreadyRegistered = devices.some((d) => d.deviceId === deviceId);
+    // A missing/malformed deviceLimit (hand-edited doc, partial write) must
+    // fail closed - `devices.length >= undefined` is always false, which
+    // would otherwise let this device register with no limit at all.
+    const deviceLimit = Number.isFinite(license.deviceLimit) && license.deviceLimit > 0
+      ? license.deviceLimit
+      : 1;
 
     if (!alreadyRegistered) {
-      if (devices.length >= license.deviceLimit) {
+      if (devices.length >= deviceLimit) {
         throw new LicenseRejection(
           'limit-reached',
-          `This license is already active on ${license.deviceLimit} device(s). Deactivate one first.`,
+          `This license is already active on ${deviceLimit} device(s). Deactivate one first.`,
         );
       }
       tx.update(ref, {
@@ -147,7 +180,7 @@ export async function checkLicenseOnline(key: string, deviceId: string): Promise
     expiresAt: data.expiresAt,
     source: 'online',
   };
-  writeCache(result);
+  await writeCache(result, deviceId);
   return result;
 }
 
@@ -183,7 +216,7 @@ export async function checkLicense(key: string): Promise<LicenseCheckResult> {
       throw err;
     }
 
-    const cached = readCache();
+    const cached = await readCache(deviceId);
     if (cached && cached.key === key.trim() && cached.status === 'active') {
       const age = Date.now() - cached.cachedAt;
       if (age < OFFLINE_GRACE_PERIOD_MS) {
@@ -196,7 +229,7 @@ export async function checkLicense(key: string): Promise<LicenseCheckResult> {
 
 /** Silent re-check used on app startup for an already-activated key. */
 export async function revalidateCachedLicense(): Promise<LicenseCheckResult | null> {
-  const cached = readCache();
+  const cached = await readCache(getDeviceId());
   if (!cached) return null;
   try {
     return await checkLicense(cached.key);

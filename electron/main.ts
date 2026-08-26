@@ -80,9 +80,17 @@ app.whenReady().then(() => {
   // Setup auto updater
   autoUpdater.autoDownload = true;
   autoUpdater.autoInstallOnAppQuit = true;
-  
+
   if (app.isPackaged) {
-    autoUpdater.checkForUpdatesAndNotify();
+    // webContents.send() is fire-and-forget - Electron doesn't queue IPC
+    // messages for listeners that attach later. Waiting for did-finish-load
+    // (the renderer's bundle has run and mounted App.tsx's updater
+    // listeners by then) instead of firing this immediately in
+    // whenReady() closes the window where a fast update check could
+    // resolve and emit its event before anything was listening for it.
+    mainWindow?.webContents.once('did-finish-load', () => {
+      autoUpdater.checkForUpdatesAndNotify();
+    });
   }
 
   autoUpdater.on('update-available', (info) => {
@@ -178,11 +186,34 @@ ipcMain.handle('dialog:openDirectory', async () => {
 
 import fs from 'fs';
 
+// Two queued files that end up with the same output name (e.g. two source
+// videos both named "clip.mp4" from different folders) would otherwise
+// silently overwrite each other via fs.writeFileSync with no warning - the
+// caller sees "success" even though one output is gone. Appends " (2)",
+// " (3)", etc. before the extension whenever a name is already taken,
+// tracking taken names across the whole batch so within-batch collisions
+// (not just collisions with pre-existing files) are also caught.
+function dedupeFileName(outputDir: string, fileName: string, takenInBatch: Set<string>): string {
+  const ext = path.extname(fileName);
+  const base = fileName.slice(0, fileName.length - ext.length);
+  let candidate = fileName;
+  let n = 2;
+  while (fs.existsSync(path.join(outputDir, candidate)) || takenInBatch.has(candidate)) {
+    candidate = `${base} (${n})${ext}`;
+    n++;
+  }
+  takenInBatch.add(candidate);
+  return candidate;
+}
+
 ipcMain.handle('file:saveBuffer', async (_event, buffer: ArrayBuffer, defaultName: string) => {
-  const { canceled, filePath } = await dialog.showSaveDialog({
+  const options = {
     defaultPath: path.join(app.getPath('downloads'), defaultName),
     title: 'Save File',
-  });
+  };
+  const { canceled, filePath } = mainWindow
+    ? await dialog.showSaveDialog(mainWindow, options)
+    : await dialog.showSaveDialog(options);
 
   if (canceled || !filePath) {
     return { success: false, error: 'Canceled by user' };
@@ -197,10 +228,13 @@ ipcMain.handle('file:saveBuffer', async (_event, buffer: ArrayBuffer, defaultNam
 });
 
 ipcMain.handle('file:saveFilesBulk', async (_event, files: {name: string, buffer: ArrayBuffer}[]) => {
-  const { canceled, filePaths } = await dialog.showOpenDialog({
+  const options = {
     title: 'Select Export Directory',
-    properties: ['openDirectory', 'createDirectory']
-  });
+    properties: ['openDirectory', 'createDirectory'] as const,
+  };
+  const { canceled, filePaths } = mainWindow
+    ? await dialog.showOpenDialog(mainWindow, options)
+    : await dialog.showOpenDialog(options);
 
   if (canceled || filePaths.length === 0) {
     return { success: false, error: 'Canceled by user' };
@@ -209,8 +243,10 @@ ipcMain.handle('file:saveFilesBulk', async (_event, files: {name: string, buffer
   const outputDir = filePaths[0];
 
   try {
+    const takenInBatch = new Set<string>();
     for (const file of files) {
-      fs.writeFileSync(path.join(outputDir, file.name), Buffer.from(file.buffer));
+      const safeName = dedupeFileName(outputDir, file.name, takenInBatch);
+      fs.writeFileSync(path.join(outputDir, safeName), Buffer.from(file.buffer));
     }
     return { success: true, outputPath: outputDir };
   } catch (error: any) {
@@ -289,8 +325,15 @@ ipcMain.handle('media:extractAudio', async (event, inputPath) => {
 
 ipcMain.handle('media:extractAudioBulk', async (event, inputPath, outputFolder, fileName, normalizeAudio) => {
   if (!mainWindow) return { success: false, error: 'No window' };
-  
-  const outputPath = path.join(outputFolder, fileName);
+
+  // Two queued videos with the same base name (e.g. "clip.mp4" from two
+  // different source folders) would otherwise both resolve to the same
+  // "clip.mp3" and the second extraction would silently overwrite the
+  // first with no warning to the user. Each call runs sequentially
+  // (awaited in the renderer's loop), so an existsSync check here also
+  // correctly catches collisions against files this same batch already wrote.
+  const safeFileName = dedupeFileName(outputFolder, fileName, new Set());
+  const outputPath = path.join(outputFolder, safeFileName);
 
   return new Promise((resolve) => {
     let command = ffmpeg(inputPath)

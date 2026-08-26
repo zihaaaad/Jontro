@@ -8,7 +8,7 @@ export interface LicenseState {
   expiresAt: number | null;
   error: string | null;
   activate: (key: string) => Promise<boolean>;
-  deactivate: () => Promise<void>;
+  deactivate: () => Promise<boolean>;
   isPremium: boolean;
 }
 

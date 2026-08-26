@@ -1,9 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { UploadCloud, X, FileAudio } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function VideoConverter() {
   const [selectedFiles, setSelectedFiles] = useState<{name: string, path: string}[]>([]);
+  // preload only swaps the IPC listener out on the *next* onExtractionProgress
+  // call, not on unmount - guard state updates so navigating away from this
+  // tool mid-conversion doesn't keep calling setProgress on an unmounted tree.
+  const isMountedRef = useRef(true);
+  useEffect(() => () => { isMountedRef.current = false; }, []);
   const [isConverting, setIsConverting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
@@ -79,7 +84,7 @@ export default function VideoConverter() {
       
       // Wire up progress listener
       window.electronAPI.onExtractionProgress((percent: number) => {
-        setProgress(Math.min(percent, 100));
+        if (isMountedRef.current) setProgress(Math.min(percent, 100));
       });
       
       let successCount = 0;

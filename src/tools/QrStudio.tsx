@@ -32,17 +32,27 @@ export default function QrStudio() {
     setLogoUrl(null);
   };
 
+  // The on-screen preview renders the QR at min(size, 300) so huge values
+  // don't blow up the layout, but exports must honor the real "Size (px)"
+  // the user entered. Overriding just width/height (not viewBox) on a clone
+  // rescales the existing vector cleanly to the true export size.
+  const getExportSvgString = (): string | null => {
+    const svg = qrRef.current?.querySelector('svg');
+    if (!svg) return null;
+    const clone = svg.cloneNode(true) as SVGSVGElement;
+    clone.setAttribute('width', String(size));
+    clone.setAttribute('height', String(size));
+    return new XMLSerializer().serializeToString(clone);
+  };
+
   const downloadQR = async (format: 'png' | 'svg') => {
-    if (!qrRef.current) return;
-    
+    const svgData = getExportSvgString();
+    if (!svgData) return;
+
     if (format === 'svg') {
-      const svg = qrRef.current.querySelector('svg');
-      if (!svg) return;
-      
-      const svgData = new XMLSerializer().serializeToString(svg);
       const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
       const buffer = await blob.arrayBuffer();
-      
+
       if (window.electronAPI && window.electronAPI.saveBuffer) {
         const result = await window.electronAPI.saveBuffer(buffer, `QR_Code.${format}`);
         if (result.success) toast.success('QR Code exported successfully!');
@@ -56,26 +66,22 @@ export default function QrStudio() {
         URL.revokeObjectURL(url);
       }
     } else {
-      const svg = qrRef.current.querySelector('svg');
-      if (!svg) return;
-      
-      const svgData = new XMLSerializer().serializeToString(svg);
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const img = new Image();
-      
+
       img.onload = async () => {
         canvas.width = size;
         canvas.height = size;
         if (ctx) {
           ctx.fillStyle = bgColor;
           ctx.fillRect(0, 0, size, size);
-          ctx.drawImage(img, 0, 0);
-          
+          ctx.drawImage(img, 0, 0, size, size);
+
           canvas.toBlob(async (blob) => {
             if (!blob) return;
             const buffer = await blob.arrayBuffer();
-            
+
             if (window.electronAPI && window.electronAPI.saveBuffer) {
               const result = await window.electronAPI.saveBuffer(buffer, `QR_Code.${format}`);
               if (result.success) toast.success('QR Code exported successfully!');
@@ -91,6 +97,7 @@ export default function QrStudio() {
           }, 'image/png');
         }
       };
+      img.onerror = () => toast.error('Failed to render QR code for export.');
       img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
     }
   };

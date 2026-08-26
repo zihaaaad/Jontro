@@ -22,6 +22,18 @@ export default function VectorTracer() {
     previewUrlRef.current = previewUrl;
   }, [previewUrl]);
 
+  // Bumped whenever the in-flight trace should be considered abandoned
+  // (image removed/replaced, or settings changed mid-trace). The
+  // ImageTracer callback checks this before applying its result, so a
+  // stale/late callback can never overwrite a newer state or leave
+  // isProcessing stuck true forever if its source blob was revoked
+  // out from under it.
+  const processingIdRef = useRef(0);
+  const abortInFlightTrace = () => {
+    processingIdRef.current++;
+    setIsProcessing(false);
+  };
+
   const presets = [
     { id: 'custom', name: 'Advanced / Custom' },
     { id: 'ultra_perfect', name: 'Ultra Perfect (Algorithm)' },
@@ -39,16 +51,22 @@ export default function VectorTracer() {
     { id: 'artistic1', name: 'Artistic 1' }
   ];
 
+  const loadFile = (file: File) => {
+    abortInFlightTrace();
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+    setSvgOutput(null);
+  };
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
-      setSvgOutput(null);
+      loadFile(e.target.files[0]);
     }
   };
 
   const removeFile = () => {
+    abortInFlightTrace();
     setSelectedFile(null);
     if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
     setPreviewUrl(null);
@@ -61,9 +79,7 @@ export default function VectorTracer() {
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0];
       if (file.type.startsWith('image/')) {
-        setSelectedFile(file);
-        setPreviewUrl(URL.createObjectURL(file));
-        setSvgOutput(null);
+        loadFile(file);
       } else {
         toast.error('Please drop a valid image file.');
       }
@@ -87,6 +103,7 @@ export default function VectorTracer() {
     if (!previewUrl) return;
     setIsProcessing(true);
     setSvgOutput(null);
+    const currentId = ++processingIdRef.current;
 
     try {
       let options: any = preset;
@@ -113,6 +130,9 @@ export default function VectorTracer() {
       }
 
       ImageTracer.imageToSVG(previewUrl, (svgstr: string) => {
+        // Ignore a result from a trace that's since been abandoned (image
+        // removed/replaced, or settings changed before this one finished).
+        if (processingIdRef.current !== currentId) return;
         setSvgOutput(svgstr);
         setIsProcessing(false);
         toast.success('Vectorization complete!');
@@ -120,7 +140,7 @@ export default function VectorTracer() {
     } catch (e) {
       console.error(e);
       toast.error('Failed to vectorize image.');
-      setIsProcessing(false);
+      if (processingIdRef.current === currentId) setIsProcessing(false);
     }
   };
 
@@ -230,6 +250,7 @@ export default function VectorTracer() {
                 value={preset}
                 onChange={(e) => {
                   setPreset(e.target.value);
+                  abortInFlightTrace();
                   setSvgOutput(null); // Reset output when preset changes so user can re-trace
                 }}
                 className="w-full bg-zinc-50 dark:bg-[#0e0e0e] border border-zinc-300 dark:border-[#404040] rounded text-sm px-3 py-2 text-zinc-900 dark:text-[#ededed] focus:outline-none focus:border-zinc-500 dark:focus:border-[#838383] appearance-none"
@@ -251,7 +272,7 @@ export default function VectorTracer() {
                 </div>
                 <input 
                   type="range" min="2" max="256" value={colorLimit} 
-                  onChange={e => { setColorLimit(Number(e.target.value)); setSvgOutput(null); }} 
+                  onChange={e => { setColorLimit(Number(e.target.value)); abortInFlightTrace(); setSvgOutput(null); }}
                   className="w-full accent-blue-500" 
                 />
                 
@@ -261,7 +282,7 @@ export default function VectorTracer() {
                 </div>
                 <input 
                   type="range" min="1" max="100" value={accuracy} 
-                  onChange={e => { setAccuracy(Number(e.target.value)); setSvgOutput(null); }} 
+                  onChange={e => { setAccuracy(Number(e.target.value)); abortInFlightTrace(); setSvgOutput(null); }}
                   className="w-full accent-blue-500" 
                 />
                 <p className="text-[9px] text-zinc-500 dark:text-[#555] mt-2 leading-tight">

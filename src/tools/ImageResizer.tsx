@@ -44,6 +44,11 @@ export default function ImageResizer() {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     const url = URL.createObjectURL(file);
     setPreviewUrl(url);
+    // The cropper only republishes a fresh crop rectangle asynchronously
+    // (onCropComplete, once it measures the new image) - without clearing
+    // the old one here, a crop rectangle from the previous file stays
+    // "valid" and exportable for a brief window after loading a new image.
+    setCroppedAreaPixels(null);
     const img = new Image();
     img.onload = () => {
       setWidth(img.width.toString());
@@ -90,6 +95,11 @@ export default function ImageResizer() {
   }, []);
 
   const clearImage = () => {
+    // Don't let Escape/the X button revoke the blob URL an in-flight export
+    // is still reading from (img.src = previewUrl in handleExport) - that
+    // race turns a user-triggered cancel into a misleading "Failed to
+    // process image" toast.
+    if (isExporting) return;
     setSelectedFile(null);
     if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
     setPreviewUrl(null);
@@ -97,6 +107,7 @@ export default function ImageResizer() {
     setHeight('');
     setCrop({ x: 0, y: 0 });
     setZoom(1);
+    setCroppedAreaPixels(null);
   };
 
   const onCropComplete = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
@@ -326,7 +337,7 @@ export default function ImageResizer() {
           <button 
             id="export-img-btn"
             onClick={handleExport}
-            disabled={!selectedFile || isExporting}
+            disabled={!selectedFile || isExporting || !croppedAreaPixels}
             className={`w-full mt-6 py-2 rounded-md text-sm font-medium transition-none flex items-center justify-center ${
               !selectedFile || isExporting
                 ? 'bg-zinc-100 dark:bg-[#262626] text-zinc-500 dark:text-[#838383] cursor-not-allowed'

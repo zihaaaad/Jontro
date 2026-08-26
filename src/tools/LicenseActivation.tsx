@@ -30,8 +30,15 @@ export default function LicenseActivation() {
   };
 
   const handleDeactivate = async () => {
-    await deactivate();
-    toast.success('This device has been deactivated.');
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    const ok = await deactivate();
+    setIsSubmitting(false);
+    if (ok) {
+      toast.success('This device has been deactivated.');
+    } else {
+      toast.error('Could not deactivate this device. Check your internet connection and try again.');
+    }
   };
 
   return (
@@ -76,9 +83,10 @@ export default function LicenseActivation() {
             </div>
             <button
               onClick={handleDeactivate}
-              className="px-3 py-1.5 rounded-md text-xs font-medium border border-zinc-300 dark:border-[#404040] text-zinc-600 dark:text-[#a3a3a3] hover:bg-zinc-50 dark:hover:bg-[#1a1a1a] transition-none"
+              disabled={isSubmitting}
+              className="px-3 py-1.5 rounded-md text-xs font-medium border border-zinc-300 dark:border-[#404040] text-zinc-600 dark:text-[#a3a3a3] hover:bg-zinc-50 dark:hover:bg-[#1a1a1a] disabled:opacity-50 transition-none"
             >
-              Deactivate this device
+              {isSubmitting ? 'Deactivating...' : 'Deactivate this device'}
             </button>
           </div>
         ) : (

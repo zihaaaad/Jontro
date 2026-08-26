@@ -53,14 +53,23 @@ export function LicenseProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const deactivate = useCallback(async () => {
-    if (!activeKey) return;
+    if (!activeKey) return false;
+    setError(null);
     try {
       await deactivateDevice(activeKey, getDeviceId());
-    } finally {
       setPlan(null);
       setActiveKey(null);
       setExpiresAt(null);
       setStatus('inactive');
+      return true;
+    } catch {
+      // Local state (and the device's activation slot on the server) is left
+      // untouched on failure - only a confirmed remote deactivation should
+      // downgrade this device, otherwise a transient network error would
+      // silently lock the user out of premium tools with no way back short
+      // of re-activating.
+      setError('Could not reach the license server. Check your internet connection and try again.');
+      return false;
     }
   }, [activeKey]);
 

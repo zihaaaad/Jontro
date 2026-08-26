@@ -27,6 +27,16 @@ export default function OcrTool() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [language, setLanguage] = useState('ben+eng');
 
+  // Releases the blob URL on unmount too, not just when the next scan
+  // starts - without this, navigating away from the tool after a single
+  // scan (never coming back to trigger the next processImage's manual
+  // revoke) leaks that blob for the rest of the app session.
+  useEffect(() => {
+    return () => {
+      if (previewImage) URL.revokeObjectURL(previewImage);
+    };
+  }, [previewImage]);
+
   // useCallback (with the state it actually reads as deps) so the paste
   // listener below always re-binds to a fresh closure instead of forever
   // seeing isProcessing/previewImage/language as they were at mount.

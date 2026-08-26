@@ -35,7 +35,7 @@ export default function TodoList() {
     e.preventDefault();
     if (!newTask.trim()) return;
     
-    const newTaskObj = { id: Date.now().toString(), text: newTask.trim(), completed: false, urgency: getUrgencyScore(newTask) };
+    const newTaskObj = { id: crypto.randomUUID(), text: newTask.trim(), completed: false, urgency: getUrgencyScore(newTask) };
     
     setTasks(prev => {
       const updated = [newTaskObj, ...prev];
