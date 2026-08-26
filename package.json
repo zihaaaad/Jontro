@@ -23,14 +23,16 @@
       "icon": "build/icon.png",
       "target": [
         "nsis"
-      ]
+      ],
+      "artifactName": "${productName}-Setup-${version}.${ext}"
     },
     "mac": {
       "icon": "build/icon.png",
       "category": "public.app-category.utilities",
       "target": [
         "dmg"
-      ]
+      ],
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
     "directories": {
       "output": "release"
