@@ -32,6 +32,18 @@ export default function ImageResizer() {
     previewUrlRef.current = previewUrl;
   }, [previewUrl]);
 
+  // Same problem, different variable: the Escape-key listener below is
+  // registered once (empty deps) and was reading `isExporting` directly out
+  // of that first render's closure - permanently seeing it as `false`, its
+  // value at mount, no matter what it actually is later. That silently
+  // defeated the isExporting guard in clearImage() for the Escape-key path
+  // specifically (the X button's onClick always got a fresh closure, so it
+  // was never affected).
+  const isExportingRef = useRef(false);
+  useEffect(() => {
+    isExportingRef.current = isExporting;
+  }, [isExporting]);
+
   // Cleanup memory leak when component unmounts or file changes
   useEffect(() => {
     return () => {
@@ -82,6 +94,27 @@ export default function ImageResizer() {
     e.stopPropagation();
   };
 
+  // useCallback with an empty dep array (it only touches refs and stable
+  // setters) so its identity never changes - that's what makes it safe to
+  // list in the effect below without re-binding the listener on every
+  // render, and what makes isExportingRef necessary in the first place
+  // (this same stable closure is what the Escape key always calls).
+  const clearImage = useCallback(() => {
+    // Don't let Escape/the X button revoke the blob URL an in-flight export
+    // is still reading from (img.src = previewUrl in handleExport) - that
+    // race turns a user-triggered cancel into a misleading "Failed to
+    // process image" toast.
+    if (isExportingRef.current) return;
+    setSelectedFile(null);
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    setPreviewUrl(null);
+    setWidth('');
+    setHeight('');
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setCroppedAreaPixels(null);
+  }, []);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') clearImage();
@@ -92,23 +125,7 @@ export default function ImageResizer() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  const clearImage = () => {
-    // Don't let Escape/the X button revoke the blob URL an in-flight export
-    // is still reading from (img.src = previewUrl in handleExport) - that
-    // race turns a user-triggered cancel into a misleading "Failed to
-    // process image" toast.
-    if (isExporting) return;
-    setSelectedFile(null);
-    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
-    setPreviewUrl(null);
-    setWidth('');
-    setHeight('');
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setCroppedAreaPixels(null);
-  };
+  }, [clearImage]);
 
   const onCropComplete = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
     setCroppedAreaPixels(croppedAreaPixels);
