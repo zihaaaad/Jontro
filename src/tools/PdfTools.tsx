@@ -89,6 +89,36 @@ function makeThumbnail(canvas: HTMLCanvasElement, maxWidth = 240): string {
   return thumb.toDataURL('image/jpeg', 0.82);
 }
 
+// Below these, a "detected" quad is more likely noise than a real page -
+// classical edge detection can report success:true with technically-valid
+// corners on any photo (a face, a graphic design, anything with edges),
+// not just documents. Calibrated against real test cases: a genuine
+// photographed page scored confidence ~0.93 covering most of the frame,
+// while a portrait and an abstract graphic both scored confidence ~0.17-0.21
+// with the "page" being a sliver covering under 1.5% of the image.
+const MIN_DETECTION_CONFIDENCE = 0.5;
+const MIN_DETECTION_AREA_RATIO = 0.15;
+
+function quadAreaRatio(corners: CornerPoints, width: number, height: number): number {
+  const pts = [corners.topLeft, corners.topRight, corners.bottomRight, corners.bottomLeft];
+  let area = 0;
+  for (let i = 0; i < 4; i++) {
+    const p1 = pts[i];
+    const p2 = pts[(i + 1) % 4];
+    area += p1.x * p2.y - p2.x * p1.y;
+  }
+  return Math.abs(area) / 2 / (width * height);
+}
+
+function fullBoundsCorners(width: number, height: number): CornerPoints {
+  return {
+    topLeft: { x: 0, y: 0 },
+    topRight: { x: width, y: 0 },
+    bottomRight: { x: width, y: height },
+    bottomLeft: { x: 0, y: height },
+  };
+}
+
 function loadImageFromFile(file: File): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
@@ -114,7 +144,7 @@ export default function PdfTools() {
   // Images-to-PDF (scan) State
   const [scanPages, setScanPages] = useState<ScanPage[]>([]);
   const [colorMode, setColorMode] = useState<'original' | 'gray' | 'bw'>('original');
-  const [editorImage, setEditorImage] = useState<{ file: File; img: HTMLImageElement; corners?: CornerPoints } | null>(null);
+  const [editorImage, setEditorImage] = useState<{ file: File; img: HTMLImageElement; corners?: CornerPoints; lowConfidence: boolean } | null>(null);
   const scanicRef = useRef<ScanicModule | null>(null);
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const pendingResolveRef = useRef<((corners: CornerPoints | null) => void) | null>(null);
@@ -167,19 +197,33 @@ export default function PdfTools() {
       }
 
       // Auto-detect the page's corners (Canny edge detection -> largest
-      // quadrilateral contour). If detection isn't confident, leave corners
-      // undefined - the editor falls back to an inset quad the user can
-      // drag into place manually, so a failed auto-detect never blocks the
-      // workflow.
+      // quadrilateral contour). Classical edge detection can report
+      // success:true on ANY photo with edges - a face, a graphic design,
+      // not just documents - so a "successful" detection isn't trusted on
+      // its own. Require both a confident score AND a plausible page size
+      // (a real photographed page fills most of the frame; a false-positive
+      // detection tends to be a tiny sliver). Calibrated against real
+      // photos: a genuine document scored confidence ~0.93 covering most of
+      // the frame, while a portrait and an abstract graphic both scored
+      // ~0.17-0.21 with "pages" covering under 1.5% of the image.
       let detected: CornerPoints | undefined;
+      let lowConfidence = false;
       try {
         const detectResult = await scanic.scanDocument(img, { mode: 'detect' });
-        if (detectResult.success && detectResult.corners) detected = detectResult.corners;
+        const confident = detectResult.success
+          && detectResult.corners
+          && (detectResult.confidence ?? 1) >= MIN_DETECTION_CONFIDENCE
+          && quadAreaRatio(detectResult.corners, img.width, img.height) >= MIN_DETECTION_AREA_RATIO;
+        if (confident) {
+          detected = detectResult.corners!;
+        } else {
+          lowConfidence = true;
+        }
       } catch {
-        // fall through with no detected corners
+        lowConfidence = true;
       }
 
-      setEditorImage({ file, img, corners: detected });
+      setEditorImage({ file, img, corners: detected ?? fullBoundsCorners(img.width, img.height), lowConfidence });
       const corners = await new Promise<CornerPoints | null>((resolve) => {
         pendingResolveRef.current = resolve;
       });
@@ -852,9 +896,17 @@ export default function PdfTools() {
       {editorImage && (
         <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-6">
           <div className="bg-white dark:bg-[#141414] rounded-md p-4 flex flex-col items-center">
-            <p className="text-xs text-zinc-500 dark:text-[#838383] mb-3 self-start">
-              Drag the corners to match the page edges, then Apply.
-            </p>
+            {editorImage.lowConfidence ? (
+              <p className="text-xs text-amber-600 dark:text-amber-400 mb-3 self-start max-w-[78vw]">
+                We couldn't find a clear page in this photo, so the whole image is selected. If it's not a
+                document (a portrait, a design, etc.), just click Apply to add it as-is - or drag the corners
+                to crop it.
+              </p>
+            ) : (
+              <p className="text-xs text-zinc-500 dark:text-[#838383] mb-3 self-start">
+                Drag the corners to match the page edges, then Apply.
+              </p>
+            )}
             <div ref={editorContainerRef} style={{ width: '78vw', height: '68vh', maxWidth: '900px' }} />
           </div>
         </div>
