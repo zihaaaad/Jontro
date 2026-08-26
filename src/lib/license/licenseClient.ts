@@ -115,6 +115,24 @@ export function clearLicenseCache() {
   localStorage.removeItem(LICENSE_CACHE_KEY);
 }
 
+// Migration path for the pre-1.0.26 unsigned cache format. readCache()
+// correctly refuses to trust it (that's the point of signing it), but a
+// customer who was legitimately activated on 1.0.25 shouldn't appear
+// "logged out" just because they auto-updated - this pulls out nothing but
+// the key itself (never status/expiry from the untrusted old envelope) so
+// revalidateCachedLicense can silently re-verify it online, exactly as if
+// they'd re-typed it into the Activate box themselves.
+function readLegacyKey(): string | null {
+  try {
+    const raw = localStorage.getItem(LICENSE_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return typeof parsed.key === 'string' ? parsed.key : null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Validates a license key against Firestore and registers this device
  * against it (inside a transaction, so two simultaneous activations at the
@@ -230,9 +248,10 @@ export async function checkLicense(key: string): Promise<LicenseCheckResult> {
 /** Silent re-check used on app startup for an already-activated key. */
 export async function revalidateCachedLicense(): Promise<LicenseCheckResult | null> {
   const cached = await readCache(getDeviceId());
-  if (!cached) return null;
+  const keyToCheck = cached?.key ?? readLegacyKey();
+  if (!keyToCheck) return null;
   try {
-    return await checkLicense(cached.key);
+    return await checkLicense(keyToCheck);
   } catch {
     return null;
   }
