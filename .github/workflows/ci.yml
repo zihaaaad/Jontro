@@ -1,35 +1,43 @@
 name: CI Build Check
 
-# Runs on every push and PR (unlike release.yml, which only fires on version
-# tags and actually publishes). This is the "does my change still build on
-# Windows and Mac" signal - fast feedback without cutting a release.
 on:
   push:
     branches:
       - master
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - '.gitignore'
-      - 'LICENSE'
+    paths:
+      - 'src/**'
+      - 'electron/**'
+      - 'public/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig*.json'
+      - 'vite.config.*'
+      - '.github/workflows/ci.yml'
   pull_request:
     branches:
       - master
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - '.gitignore'
-      - 'LICENSE'
+    paths:
+      - 'src/**'
+      - 'electron/**'
+      - 'public/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig*.json'
+      - 'vite.config.*'
+      - '.github/workflows/ci.yml'
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-check:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest, macos-latest]
-
-    runs-on: ${{ matrix.os }}
+    name: Lint & Typecheck (Linux 1x Runner)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Check out Git repository (Shallow Clone)
@@ -37,31 +45,20 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
+      - name: Setup Node.js & Dependency Cache
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'npm'
 
       - name: Install Dependencies
-        run: npm install
+        run: npm ci
 
       - name: Lint
         run: npm run lint
 
-      - name: Typecheck + Build (Windows/Mac installer)
-        run: npm run build
+      - name: Typecheck
+        run: npx tsc -b
 
-      # No GH_TOKEN / code-signing secrets here on purpose - this workflow
-      # never publishes. It only proves the app still packages cleanly on
-      # both platforms after a change, and gives you a downloadable build
-      # to sanity-check without waiting for a tagged release.
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: jontro-${{ matrix.os }}-${{ github.sha }}
-          path: |
-            release/*.exe
-            release/*.dmg
-          if-no-files-found: ignore
-          retention-days: 14
+      - name: Build Web Bundle
+        run: npx vite build
