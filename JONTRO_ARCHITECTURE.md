@@ -1,5 +1,5 @@
 # Jontro - Professional Utilities Suite
-**Created by Zihad Hasan (Z-root-X)**
+**Created by Zihad Hasan (zihaaaad)**
 
 ##  Vision
 Jontro is designed to be the ultimate, all-in-one desktop utility suite. It replaces the need for users to download multiple sketchy, ad-filled applications from the internet by providing essential daily tools in one secure, beautiful, and blazing-fast interface. 

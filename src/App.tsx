@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   FileAudio, Image as ImageIcon, Files, ScanText, ListTodo, KeyRound,
   ChevronRight, LayoutDashboard, Sun, Moon, Search, Cpu, Activity,
-  PenTool, QrCode, Crown, Lock, RefreshCw, WifiOff
+  PenTool, QrCode, Heart, RefreshCw, WifiOff
 } from 'lucide-react';
 import VideoConverter from './tools/VideoConverter';
 import TodoList from './tools/TodoList';
@@ -13,15 +13,11 @@ import OcrTool from './tools/OcrTool';
 import QrStudio from './tools/QrStudio';
 import HomeDashboard from './tools/HomeDashboard';
 import VectorTracer from './tools/VectorTracer';
-import LicenseActivation from './tools/LicenseActivation';
 import ErrorBoundary from './components/ErrorBoundary';
-import PremiumGate from './lib/license/PremiumGate';
-import { useLicense } from './lib/license/useLicense';
 import { Toaster, toast } from 'sonner';
 import pkg from '../package.json';
 
 function App() {
-  const { isPremium } = useLicense();
   const [activeTab, setActiveTab] = useState('home');
   const [isBooting, setIsBooting] = useState(true);
   const [bootLogs, setBootLogs] = useState<string[]>([]);
@@ -139,14 +135,14 @@ function App() {
   };
 
   const tools = [
-    { id: 'video-converter', name: 'Video to Audio', icon: FileAudio, premium: true },
-    { id: 'image-resizer', name: 'Image Resizer', icon: ImageIcon, premium: true },
-    { id: 'vector-tracer', name: 'Vector Tracer', icon: PenTool, premium: true },
-    { id: 'pdf-tools', name: 'PDF Tools', icon: Files, premium: true },
-    { id: 'ocr-tool', name: 'Screenshot & OCR', icon: ScanText, premium: true },
-    { id: 'qr-studio', name: 'QR Studio', icon: QrCode, premium: false },
-    { id: 'todo-list', name: 'To-Do List', icon: ListTodo, premium: false },
-    { id: 'password-gen', name: 'Password Gen', icon: KeyRound, premium: false },
+    { id: 'video-converter', name: 'Video to Audio', icon: FileAudio },
+    { id: 'image-resizer', name: 'Image Resizer', icon: ImageIcon },
+    { id: 'vector-tracer', name: 'Vector Tracer', icon: PenTool },
+    { id: 'pdf-tools', name: 'PDF Tools', icon: Files },
+    { id: 'ocr-tool', name: 'Screenshot & OCR', icon: ScanText },
+    { id: 'qr-studio', name: 'QR Studio', icon: QrCode },
+    { id: 'todo-list', name: 'To-Do List', icon: ListTodo },
+    { id: 'password-gen', name: 'Password Gen', icon: KeyRound },
   ];
 
   if (isBooting) {
@@ -236,31 +232,23 @@ function App() {
                 >
                   <span className="relative md:mr-3 shrink-0">
                     <Icon size={16} className={isActive ? 'text-zinc-900 dark:text-[#ededed]' : 'text-zinc-500 dark:text-[#838383]'} strokeWidth={isActive ? 2 : 1.5} />
-                    {tool.premium && !isPremium && (
-                      <Lock size={9} strokeWidth={2.5} className="md:hidden absolute -top-1.5 -right-1.5 bg-white dark:bg-[#141414] text-zinc-400 dark:text-[#555] rounded-full p-0.5 box-content" />
-                    )}
                   </span>
                   <span className={`hidden md:block flex-1 text-left ${isActive ? 'font-medium' : 'font-normal'}`}>{tool.name}</span>
-                  {tool.premium && !isPremium && (
-                    <Lock size={11} className="hidden md:block text-zinc-400 dark:text-[#555] shrink-0" />
-                  )}
                 </button>
               )
             })}
 
-            <button
-              onClick={() => setActiveTab('license')}
-              title="License"
-              aria-label="License"
-              className={`w-full flex items-center justify-center md:justify-start px-3 py-3 md:py-2 rounded-md text-sm transition-none mt-4 border ${
-                activeTab === 'license'
-                  ? 'bg-zinc-100 border-zinc-200 text-zinc-900 dark:bg-[#262626] dark:border-[#404040] dark:text-[#ededed]'
-                  : 'border-dashed border-zinc-200 dark:border-[#262626] hover:bg-zinc-50 text-zinc-600 hover:text-zinc-900 dark:hover:bg-[#1f1f1f] dark:text-[#a3a3a3] dark:hover:text-[#ededed]'
-              }`}
+            <a
+              href="https://zihaaaad.github.io/Jontro/#donate"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Support the project"
+              aria-label="Support the project"
+              className="w-full flex items-center justify-center md:justify-start px-3 py-3 md:py-2 rounded-md text-sm transition-none mt-4 border border-dashed border-zinc-200 dark:border-[#262626] hover:bg-zinc-50 text-zinc-600 hover:text-zinc-900 dark:hover:bg-[#1f1f1f] dark:text-[#a3a3a3] dark:hover:text-[#ededed]"
             >
-              <Crown size={16} className={`md:mr-3 shrink-0 ${activeTab === 'license' ? 'text-zinc-900 dark:text-[#ededed]' : 'text-blue-500'}`} strokeWidth={1.5} />
-              <span className={`hidden md:block ${activeTab === 'license' ? 'font-medium' : 'font-normal'}`}>{isPremium ? 'License' : 'Upgrade'}</span>
-            </button>
+              <Heart size={16} className="md:mr-3 shrink-0 text-red-500" strokeWidth={1.5} />
+              <span className="hidden md:block font-normal">Support the Project</span>
+            </a>
           </div>
         </div>
 
@@ -307,7 +295,7 @@ function App() {
             <span>Workspace</span>
             <ChevronRight size={12} className="mx-2" />
             <span className="text-zinc-900 dark:text-[#ededed]">
-              {activeTab === 'home' ? 'Dashboard' : activeTab === 'license' ? 'License' : tools.find(t => t.id === activeTab)?.name}
+              {activeTab === 'home' ? 'Dashboard' : tools.find(t => t.id === activeTab)?.name}
             </span>
           </div>
           <button
@@ -325,25 +313,14 @@ function App() {
           <div className="max-w-4xl mx-auto h-full">
             <ErrorBoundary key={activeTab}>
               {activeTab === 'home' && <HomeDashboard onSelectTool={setActiveTab} />}
-              {activeTab === 'license' && <LicenseActivation />}
               {activeTab === 'todo-list' && <TodoList />}
               {activeTab === 'password-gen' && <PasswordGen />}
               {activeTab === 'qr-studio' && <QrStudio />}
-              {activeTab === 'video-converter' && (
-                <PremiumGate toolName="Video to Audio" onActivate={() => setActiveTab('license')}><VideoConverter /></PremiumGate>
-              )}
-              {activeTab === 'image-resizer' && (
-                <PremiumGate toolName="Image Resizer" onActivate={() => setActiveTab('license')}><ImageResizer /></PremiumGate>
-              )}
-              {activeTab === 'vector-tracer' && (
-                <PremiumGate toolName="Vector Tracer" onActivate={() => setActiveTab('license')}><VectorTracer /></PremiumGate>
-              )}
-              {activeTab === 'pdf-tools' && (
-                <PremiumGate toolName="PDF Tools" onActivate={() => setActiveTab('license')}><PdfTools /></PremiumGate>
-              )}
-              {activeTab === 'ocr-tool' && (
-                <PremiumGate toolName="Screenshot & OCR" onActivate={() => setActiveTab('license')}><OcrTool /></PremiumGate>
-              )}
+              {activeTab === 'video-converter' && <VideoConverter />}
+              {activeTab === 'image-resizer' && <ImageResizer />}
+              {activeTab === 'vector-tracer' && <VectorTracer />}
+              {activeTab === 'pdf-tools' && <PdfTools />}
+              {activeTab === 'ocr-tool' && <OcrTool />}
             </ErrorBoundary>
           </div>
         </div>
@@ -367,7 +344,7 @@ function App() {
             </div>
             
             <div className="max-h-[60vh] overflow-y-auto p-2 custom-scrollbar">
-              {[{ id: 'home', name: 'Home Dashboard', icon: LayoutDashboard }, ...tools, { id: 'license', name: isPremium ? 'License' : 'Upgrade', icon: Crown }]
+              {[{ id: 'home', name: 'Home Dashboard', icon: LayoutDashboard }, ...tools]
                 .filter(t => t.name.toLowerCase().includes(paletteQuery.toLowerCase()))
                 .map(tool => {
                   const Icon = tool.icon;
