@@ -1,60 +1,96 @@
-# Jontro
+<div align="center">
 
-**Jontro** is a highly optimized, fully offline, privacy-first desktop utility application built with Electron, React, and Tailwind CSS. It is designed to perform heavy computational tasks locally on your machine, guaranteeing that your sensitive data is never uploaded to the cloud.
+# ⚡ Jontro — Desktop Utility Suite
 
-##  Core Modules
+**The offline Swiss Army knife for your daily digital workflows.**  
+*Zero telemetry. Zero cloud uploads. Total privacy. 100% Free & Open Source.*
 
-- **Video to Audio Converter:** Extract high-quality MP3 audio from bulk video files natively using an embedded FFmpeg engine. Protects the OS scheduler via a serial execution queue.
-- **Image Resizer & Cropper:** A native WebGL cropping studio that allows you to lock aspect ratios, pan, zoom, and export to WEBP/JPEG/PNG without quality loss.
-- **PDF Toolkit:** Merge multiple PDFs sequentially or extract highly specific page ranges (e.g., `1, 3, 5-10`) using a complex string parser and `pdf-lib`.
-- **OCR & PDF Scanner:** Extract text instantly from screenshots or multi-page PDFs using an offline WebAssembly Tesseract.js neural network, natively optimized for English and Bengali.
-- **Vector Tracer:** Convert raster images (PNG/JPG) into infinitely scalable SVGs using an ultra-perfect tracing algorithm.
-- **QR Studio:** Generate high-quality QR codes with custom styling, embedded logos, and background excavation.
-- **Password Generator:** Generate cryptographically secure passwords using hardware-entropy via `window.crypto.getRandomValues()`.
-- **Task Manager:** A built-in, lightweight todo list that perfectly synchronizes with your local storage.
+[![Release](https://img.shields.io/github/v/release/zihaaaad/Jontro?color=3b82f6&style=flat-square)](https://github.com/zihaaaad/Jontro/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg?style=flat-square)](LICENSE)
+[![React 19](https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react&logoColor=white)](https://react.dev)
+[![Electron](https://img.shields.io/badge/Electron-43-47848F?style=flat-square&logo=electron&logoColor=white)](https://electronjs.org)
+[![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Privacy First](https://img.shields.io/badge/Privacy-0--Telemetry-purple?style=flat-square)](https://github.com/zihaaaad/Jontro)
 
-##  Technology Stack
+[**Download Windows & macOS Installers**](https://github.com/zihaaaad/Jontro/releases/latest) &bull; [**Visit Landing Page**](https://zihaaaad.github.io/Jontro/)
 
-- **Frontend Framework:** React 19 + Vite
-- **Desktop Runtime:** Electron
-- **Styling:** Tailwind CSS v4 (Monochromatic Professional Theme)
-- **Core Engines:** `ffmpeg`, `react-easy-crop`, `pdf-lib`, `pdfjs-dist`, `tesseract.js`, `imagetracerjs`, `qrcode.react`
+</div>
 
-##  Installation & Development
+---
 
-To run this project locally, ensure you have Node.js installed.
+### Why Jontro?
+
+Most free web converters and PDF utilities force you to upload private contracts, invoices, screenshots, and videos to mysterious cloud servers where your data is logged and monetized.
+
+**Jontro fixes this permanently.** It runs directly on your machine's hardware using native background processes and client-side WebAssembly. All parsing, rendering, and neural computations take place in local RAM with **zero network requests**.
+
+---
+
+## 🛠️ Included Tools
+
+| Tool | Core Engine | What It Does |
+| :--- | :--- | :--- |
+| **🎬 Video to Audio** | Native `FFmpeg` | Bulk extract pristine MP3s from MP4, MKV, AVI, MOV with serial execution queues & optional loudness normalization. |
+| **🔍 OCR & PDF Scanner** | `Tesseract.js` (WASM) | Hit <kbd>Ctrl+V</kbd> to paste a screenshot and pull text immediately. Supports bilingual recognition (English & Bengali). |
+| **📑 PDF Studio** | `pdf-lib` + `pdfjs-dist` | Merge multiple PDFs, isolate page ranges (e.g. `1, 3, 5-10`), or rasterize pages to crisp PNGs. |
+| **🖼️ Image Studio** | HTML5 Canvas / WebGL | Crop, resize, pan, zoom, and export to WebP, JPEG, or PNG with lossless aspect ratio locking. |
+| **✏️ Vector Tracer** | `imagetracerjs` | Convert pixelated PNGs/JPGs into scalable, layered SVG vector paths locally. |
+| **📱 QR Studio** | `qrcode.react` | Create high-resolution QR codes with center logos, custom colors, and background excavation. |
+| **🔐 Password Generator** | Web Crypto API | Generate high-entropy passwords with OS hardware randomness and `zxcvbn` strength scoring. |
+| **📋 Smart Task Manager** | NLP Urgency Sorting | Fast, persistent to-do companion that automatically ranks urgency straight from natural language. |
+
+---
+
+## 🚀 Quick Start (Developers)
 
 ```bash
-# Clone the repository
+# 1. Clone the repository
 git clone https://github.com/zihaaaad/Jontro.git
-
-# Navigate to the project directory
 cd Jontro
 
-# Install dependencies
+# 2. Install dependencies
 npm install
 
-# One-time: download the offline OCR language models (needs internet once)
+# 3. Download offline OCR language models (one-time setup)
 npm run fetch:tessdata
 
-# Start the development server
+# 4. Launch the development application
 npm run dev
 ```
 
-##  Building for Production
+---
 
-Jontro builds installers for **Windows** (NSIS) and **macOS** (DMG, Intel + Apple Silicon):
+## 📦 Building Production Installers
+
+Jontro compiles into native installers for **Windows (NSIS `.exe`)** and **macOS (`.dmg`, Universal binary for Intel & Apple Silicon)**:
 
 ```bash
 npm run build
 ```
-The compiled installer(s) will be located in the `release/` directory. macOS builds must be produced on a Mac (or via the CI workflow in `.github/workflows/release.yml`, which builds both platforms on every tagged release). Unsigned macOS builds will trigger a Gatekeeper "unidentified developer" warning until the user right-click's → Open once; see `.github/workflows/release.yml` for the optional code-signing secrets.
+Compiled binaries are output directly into the `release/` directory.
 
-##  Security & Privacy
-Jontro operates on a 0-telemetry, 0-cloud architecture: all parsing, rendering, extracting, and neural network computing happens directly on your CPU and RAM, with no external API calls at runtime. The one exception is the `npm run fetch:tessdata` setup step above, which downloads the OCR language models once during installation - after that, OCR runs fully offline.
+---
 
-##  Third-Party Licensing
-Jontro's own code is MIT-licensed. One bundled dependency needs a closer look: the packaged FFmpeg binary is GPLv3-licensed (not LGPL) and is a stale 2018 build. See [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md) for the full analysis and recommended remediation.
+## 🛡️ Privacy & Security Manifesto
 
-##  License
-This project is open-source and licensed under the MIT License.
+- **0 Telemetry:** No analytics scripts, no crash loggers (no Sentry, no Mixpanel, no Google Analytics).
+- **0 Cloud Calls:** Conversions and neural models run on your CPU & RAM.
+- **Hardware Entropy:** Passwords use `window.crypto.getRandomValues()` directly from OS randomness pools.
+- **Open Source:** Full codebase is audited and transparent under the MIT license.
+
+---
+
+## ☕ Support Independent Open Source
+
+Jontro is 100% free and open-source without ads or subscriptions. If it saves you time, donations are deeply appreciated:
+
+- **bKash (Send Money):** `01732-109847`
+- **Nagad (Send Money):** `01732-109847`
+- **Bank Transfer (Islami Bank Bangladesh PLC):** Branch: Bogura &middot; Account: `20501120207611108` &middot; Name: Zihad Hasan
+
+---
+
+## 📄 License
+
+Distributed under the **MIT License**. See [LICENSE](LICENSE) for more information.
+

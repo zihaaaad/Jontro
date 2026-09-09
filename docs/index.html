@@ -1,10 +1,17 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="dark scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jontro | Free &amp; Open Source Offline Utility Suite</title>
+    <title>Jontro — The Offline Swiss Army Knife for Your Desktop</title>
+    <meta name="description" content="100% Free, open-source, zero-cloud desktop utility suite. Video conversion, WebAssembly OCR, PDF tools, image cropping, vector tracing, QR studio & password generator in one fast app.">
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -12,44 +19,73 @@
             theme: {
                 extend: {
                     colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                        },
                         zinc: {
-                            850: '#1f1f1f',
-                            900: '#18181b',
+                            850: '#1b1b1f',
+                            900: '#121215',
                             950: '#09090b',
                         }
                     },
                     fontFamily: {
                         sans: ['Inter', 'system-ui', 'sans-serif'],
+                        display: ['Outfit', 'Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
                     }
                 }
             }
         }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
         .grid-bg {
-            background-size: 40px 40px;
-            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-                              linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 32px 32px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        }
+        .glow-radial {
+            background: radial-gradient(circle at 50% 30%, rgba(59, 130, 246, 0.15), transparent 70%);
+        }
+        .glass-card {
+            background: rgba(18, 18, 21, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.18);
+            transform: translateY(-2px);
         }
     </style>
 </head>
-<body class="bg-zinc-950 text-zinc-300 min-h-screen flex flex-col antialiased selection:bg-blue-500/30">
+<body class="bg-zinc-950 text-zinc-300 min-h-screen flex flex-col antialiased selection:bg-blue-500/30 selection:text-white">
 
     <!-- Navbar -->
-    <nav class="border-b border-zinc-800/50 bg-zinc-950/80 backdrop-blur-md sticky top-0 z-50">
+    <nav class="border-b border-zinc-800/60 bg-zinc-950/80 backdrop-blur-xl sticky top-0 z-50">
         <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-zinc-100 rounded flex items-center justify-center">
-                    <span class="text-zinc-950 font-bold text-sm tracking-tighter">J</span>
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="w-9 h-9 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform duration-200">
+                    <span class="text-white font-display font-extrabold text-lg tracking-tight">J</span>
                 </div>
-                <span class="text-zinc-100 font-semibold tracking-wide">JONTRO</span>
-            </div>
-            <div class="flex items-center gap-6">
-                <a href="#donate" class="text-sm font-medium text-zinc-400 hover:text-zinc-100 transition-none">Donate</a>
-                <a href="https://github.com/zihaaaad/Jontro" target="_blank" class="text-sm font-medium text-zinc-400 hover:text-zinc-100 transition-none">
-                    View Source on GitHub
+                <div class="flex flex-col">
+                    <span class="text-white font-display font-bold tracking-wider text-base leading-none">JONTRO</span>
+                    <span class="text-[10px] text-zinc-400 font-mono tracking-widest uppercase">Desktop Suite</span>
+                </div>
+            </a>
+            <div class="flex items-center gap-4 sm:gap-6">
+                <a href="#tools" class="text-sm font-medium text-zinc-400 hover:text-zinc-100 transition-colors hidden sm:block">Tools</a>
+                <a href="#privacy" class="text-sm font-medium text-zinc-400 hover:text-zinc-100 transition-colors hidden sm:block">Privacy</a>
+                <a href="#donate" class="text-sm font-medium text-zinc-400 hover:text-zinc-100 transition-colors">Support</a>
+                <a href="https://github.com/zihaaaad/Jontro" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-xs font-medium text-zinc-200 hover:text-white transition-all duration-200">
+                    <!-- GitHub Octocat SVG -->
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+                    </svg>
+                    <span>GitHub</span>
                 </a>
             </div>
         </div>
@@ -57,205 +93,322 @@
 
     <!-- Hero Section -->
     <main class="flex-1">
-        <div class="relative overflow-hidden">
-            <div class="absolute inset-0 grid-bg opacity-30"></div>
-            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+        <div class="relative overflow-hidden pt-20 pb-24 md:pt-28 md:pb-32">
+            <div class="absolute inset-0 grid-bg opacity-40"></div>
+            <div class="absolute inset-0 glow-radial pointer-events-none"></div>
 
-            <div class="max-w-6xl mx-auto px-6 pt-32 pb-24 relative z-10 text-center">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-800/50 border border-zinc-700/50 text-xs font-medium text-zinc-300 mb-8">
-                    <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-                    <span id="version-text">Fetching latest version...</span>
+            <div class="max-w-5xl mx-auto px-6 relative z-10 text-center">
+                <!-- Release Pill -->
+                <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-zinc-900/90 border border-zinc-800 text-xs font-medium text-zinc-300 mb-8 shadow-inner shadow-zinc-800/30">
+                    <span class="flex h-2 w-2 relative">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span id="version-text">Checking latest build...</span>
+                    <span class="text-zinc-600">&bull;</span>
+                    <span class="text-zinc-400">Offline &amp; Open Source</span>
                 </div>
 
-                <h1 class="text-5xl md:text-7xl font-extrabold text-white tracking-tight mb-8">
-                    The Ultimate <br/> <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Offline Utility Suite.</span>
+                <!-- Main Title -->
+                <h1 class="text-4xl sm:text-6xl md:text-7xl font-extrabold font-display text-white tracking-tight mb-6 leading-[1.1]">
+                    Stop uploading private files to <br class="hidden sm:inline" />
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-cyan-300">
+                        random websites.
+                    </span>
                 </h1>
 
-                <p class="text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto mb-6 leading-relaxed">
-                    Zero telemetry. Zero cloud uploads. Total privacy. <br class="hidden md:block" />
-                    Jontro bundles native tools and advanced algorithmic engines into a single, blazing-fast desktop application for Windows and macOS.
+                <!-- Human Subtitle -->
+                <p class="text-base sm:text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto mb-10 leading-relaxed font-normal">
+                    Jontro is your local Swiss Army knife. Convert videos, extract OCR text, slice PDFs, crop photos, and trace vectors natively on your CPU &amp; RAM &mdash; with <strong class="text-zinc-200 font-semibold">zero telemetry</strong> and <strong class="text-zinc-200 font-semibold">zero cloud uploads</strong>.
                 </p>
 
-                <div class="flex items-center justify-center gap-2 mb-12 flex-wrap">
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-xs font-medium text-green-400">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                        100% Free, Forever
+                <!-- Value Props Badges -->
+                <div class="flex items-center justify-center gap-2 sm:gap-3 mb-12 flex-wrap">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-medium text-emerald-400">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                        100% Free Forever
                     </span>
                     <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-xs font-medium text-blue-400">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.5 10.5V6.75a4.5 4.5 0 119 0v3.75M3.75 21.75h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"></path></svg>
-                        No License, No Signup
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        No Signups &middot; No Accounts
                     </span>
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-800/50 border border-zinc-700/50 text-xs font-medium text-zinc-300">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"></path></svg>
-                        Open Source (MIT)
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-xs font-medium text-purple-400">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        Native Silicon Speed
                     </span>
                 </div>
 
-                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <a id="download-installer" href="#" class="download-link w-full sm:w-auto px-8 py-4 bg-zinc-100 hover:bg-white hover:scale-105 active:scale-95 text-zinc-950 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                        Download for Windows
+                <!-- Action Download Buttons -->
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
+                    <!-- Windows Download (Official Windows Logo SVG) -->
+                    <a id="download-installer" href="https://github.com/zihaaaad/Jontro/releases/latest" class="download-link w-full sm:w-auto px-7 py-3.5 bg-white hover:bg-zinc-100 text-zinc-950 rounded-xl font-semibold shadow-lg shadow-white/10 hover:shadow-white/20 transition-all duration-200 flex items-center justify-center gap-2.5 group">
+                        <svg class="w-4 h-4 fill-current text-blue-600" viewBox="0 0 88 88">
+                            <path d="M0 12.402l35.687-4.86.016 34.423-35.67.203zm35.67 33.529l.028 34.453L.028 75.48.016 45.728zm4.326-39.027L87.914 0v41.527l-47.918.376zm47.918 43.934v41.562l-47.918-6.745V46.671z"/>
+                        </svg>
+                        <span>Download for Windows</span>
                     </a>
-                    <a href="https://github.com/zihaaaad/Jontro/releases/latest" target="_blank" class="w-full sm:w-auto px-8 py-4 bg-zinc-900 border border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800 hover:scale-105 active:scale-95 text-zinc-100 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 20.5c-4.8 0-8.5-3.8-8.5-8.5S7.2 3.5 12 3.5s8.5 3.8 8.5 8.5-3.7 8.5-8.5 8.5zm2.2-13.9c-.6-.2-1.4-.4-2.2-.4-3.3 0-5.8 2.4-5.8 5.8 0 2.7 1.7 4.9 4.1 5.6-.1-.5-.1-1.2 0-1.7l.9-3.7s-.2-.5-.2-1.1c0-1 .6-1.8 1.3-1.8.6 0 .9.5.9 1 0 .6-.4 1.5-.6 2.4-.2.7.4 1.3 1.1 1.3 1.3 0 2.2-1.6 2.2-3.6 0-1.5-1-2.6-2.9-2.6-2.1 0-3.4 1.6-3.4 3.3 0 .6.2 1 .5 1.4.1.1.1.2.1.3l-.2.8c0 .2-.2.2-.3.2-.9-.4-1.5-1.6-1.5-2.6 0-2.1 1.5-4 4.4-4 2.3 0 4.1 1.7 4.1 3.8 0 2.3-1.4 4.1-3.4 4.1-.7 0-1.3-.3-1.5-.8 0 0-.3 1.3-.4 1.6-.2.6-.6 1.2-.9 1.7.7.2 1.4.3 2.2.3 3.3 0 5.8-2.4 5.8-5.8 0-3.2-2.5-5.7-6.1-5.9z"></path></svg>
-                        macOS &amp; Other Downloads
+
+                    <!-- macOS Download (Official Apple Logo SVG) -->
+                    <a href="https://github.com/zihaaaad/Jontro/releases/latest" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto px-7 py-3.5 bg-zinc-900/90 border border-zinc-700/80 hover:border-zinc-500 hover:bg-zinc-800/90 text-zinc-100 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2.5">
+                        <svg class="w-4 h-4 fill-current text-zinc-200" viewBox="0 0 170 170">
+                            <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.7-3.08-7.58-7.85-11.65-14.3-5.24-8.31-9.44-17.88-12.6-28.71-3.16-10.83-4.74-21.36-4.74-31.59 0-14.28 3.52-26.06 10.56-35.34 7.04-9.28 15.99-13.98 26.85-14.1 4.58 0 9.87 1.25 15.86 3.75 5.99 2.5 9.77 3.81 11.34 3.93 1.34-.12 5.3-1.48 11.88-4.08 6.58-2.6 12.08-3.75 16.51-3.45 12.28.62 22.38 5.21 30.3 13.78-10.74 6.5-16.01 15.35-15.81 26.54.2 8.7 3.44 15.99 9.72 21.87 6.28 5.88 13.9 9.17 22.86 9.87-2.3 6.96-5.18 14.1-8.64 21.43zM119.22 31.84c0-7.39 2.68-14.28 8.04-20.67 5.36-6.39 12-10.51 19.92-12.37.94 7.72-1.6 14.88-7.62 21.48-6.02 6.6-13 10.5-20.34 11.56z"/>
+                        </svg>
+                        <span>macOS (Intel &amp; M-Series)</span>
                     </a>
                 </div>
-                <p class="text-xs text-zinc-500 mt-6">Windows 10 &amp; 11 (64-bit) &middot; macOS (Intel &amp; Apple Silicon) &middot; every tool unlocked, no account required</p>
+                <p class="text-xs text-zinc-500 mt-6 tracking-wide">Runs natively on Windows 10/11 (x64) and macOS 11+ (Universal binary)</p>
             </div>
         </div>
 
-        <!-- Features Grid -->
-        <div class="max-w-6xl mx-auto px-6 py-24 border-t border-zinc-800/50">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl font-bold text-white mb-4">Powerful Native Engines</h2>
-                <p class="text-zinc-400">Everything runs natively on your CPU and RAM. No internet connection required.</p>
+        <!-- Features Grid Section -->
+        <div id="tools" class="max-w-6xl mx-auto px-6 py-24 border-t border-zinc-800/60">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <h2 class="text-3xl sm:text-4xl font-bold font-display text-white mb-4">8 Built-in Powerhouses</h2>
+                <p class="text-zinc-400 text-sm sm:text-base">No internet connection needed. No rate limits. Every tool runs locally with native execution queues to keep your system smooth.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Card 1 -->
-                <div class="bg-zinc-900/50 border border-zinc-800 p-8 rounded-xl hover:bg-zinc-900 transition-none">
-                    <div class="w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center mb-6">
-                        <svg class="w-6 h-6 text-zinc-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                
+                <!-- Tool 1: Video to Audio -->
+                <div class="glass-card p-7 rounded-2xl transition-all duration-200 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-5 text-blue-400">
+                            <!-- Film/Audio Waveform SVG -->
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                            </svg>
+                        </div>
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-lg font-bold font-display text-white">Video to Audio</h3>
+                            <span class="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-zinc-800 text-zinc-300">FFmpeg</span>
+                        </div>
+                        <p class="text-sm text-zinc-400 leading-relaxed">
+                            Batch extract pristine MP3s from MP4, MKV, AVI, and MOV. Protects system responsiveness via a native serial queue with optional EBU R128 loudness normalization.
+                        </p>
                     </div>
-                    <h3 class="text-lg font-semibold text-white mb-2">Video Converter</h3>
-                    <p class="text-sm text-zinc-400 leading-relaxed">Extract high-quality MP3 audio from bulk video files instantly. Powered by a native, hardware-accelerated FFmpeg engine.</p>
                 </div>
 
-                <!-- Card 2 -->
-                <div class="bg-zinc-900/50 border border-zinc-800 p-8 rounded-xl hover:bg-zinc-900 transition-none">
-                    <div class="w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center mb-6">
-                        <svg class="w-6 h-6 text-zinc-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <!-- Tool 2: WebAssembly OCR & PDF Scanner -->
+                <div class="glass-card p-7 rounded-2xl transition-all duration-200 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-5 text-purple-400">
+                            <!-- Proper OCR Viewfinder Scan SVG -->
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 7V5a2 2 0 012-2h2m12 0h2a2 2 0 012 2v2m0 10v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2M7 9h10M7 12h10M7 15h6"/>
+                            </svg>
+                        </div>
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-lg font-bold font-display text-white">OCR &amp; PDF Scanner</h3>
+                            <span class="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-zinc-800 text-zinc-300">WASM Neural</span>
+                        </div>
+                        <p class="text-sm text-zinc-400 leading-relaxed">
+                            Hit <kbd class="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-200 font-mono text-xs">Ctrl+V</kbd> to paste a screenshot and pull text immediately. Supports multi-page PDFs and English + Bengali bilingual OCR.
+                        </p>
                     </div>
-                    <h3 class="text-lg font-semibold text-white mb-2">Image Studio</h3>
-                    <p class="text-sm text-zinc-400 leading-relaxed">A native WebGL cropping studio. Lock aspect ratios, pan, zoom, and export to WEBP/JPEG/PNG without losing quality.</p>
                 </div>
 
-                <!-- Card 3 -->
-                <div class="bg-zinc-900/50 border border-zinc-800 p-8 rounded-xl hover:bg-zinc-900 transition-none">
-                    <div class="w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center mb-6">
-                        <svg class="w-6 h-6 text-zinc-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                <!-- Tool 3: PDF Studio -->
+                <div class="glass-card p-7 rounded-2xl transition-all duration-200 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mb-5 text-rose-400">
+                            <!-- PDF Layers / Split Merge SVG -->
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/>
+                            </svg>
+                        </div>
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-lg font-bold font-display text-white">PDF Toolkit</h3>
+                            <span class="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-zinc-800 text-zinc-300">In-Memory</span>
+                        </div>
+                        <p class="text-sm text-zinc-400 leading-relaxed">
+                            Merge unlimited PDFs, isolate complex page ranges (e.g. <code class="text-zinc-300 font-mono text-xs">1, 3, 5-12</code>), and rasterize documents to high-res PNGs without uploading sensitive contracts.
+                        </p>
                     </div>
-                    <h3 class="text-lg font-semibold text-white mb-2">PDF Toolkit</h3>
-                    <p class="text-sm text-zinc-400 leading-relaxed">Merge multiple PDFs, extract page ranges, rasterize documents to PNG, or scan photos of paper documents into a clean, perspective-corrected PDF.</p>
                 </div>
 
-                <!-- Card 4 -->
-                <div class="bg-zinc-900/50 border border-zinc-800 p-8 rounded-xl hover:bg-zinc-900 transition-none">
-                    <div class="w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center mb-6">
-                        <svg class="w-6 h-6 text-zinc-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                <!-- Tool 4: Image Studio -->
+                <div class="glass-card p-7 rounded-2xl transition-all duration-200 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-5 text-amber-400">
+                            <!-- Image Cropper / Canvas SVG -->
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-lg font-bold font-display text-white">Image Cropper &amp; Resizer</h3>
+                            <span class="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-zinc-800 text-zinc-300">HTML5 Canvas</span>
+                        </div>
+                        <p class="text-sm text-zinc-400 leading-relaxed">
+                            Lock aspect ratios, pan, zoom, and export instantly to WEBP, JPEG, or PNG with custom compression settings and zero quality loss.
+                        </p>
                     </div>
-                    <h3 class="text-lg font-semibold text-white mb-2">WebAssembly OCR</h3>
-                    <p class="text-sm text-zinc-400 leading-relaxed">Press Ctrl+V to paste a screenshot directly into the app and extract text instantly using an offline neural network.</p>
                 </div>
 
-                <!-- Card 5 -->
-                <div class="bg-zinc-900/50 border border-zinc-800 p-8 rounded-xl hover:bg-zinc-900 transition-none">
-                    <div class="w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center mb-6">
-                        <svg class="w-6 h-6 text-zinc-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                <!-- Tool 5: Vector Tracer -->
+                <div class="glass-card p-7 rounded-2xl transition-all duration-200 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mb-5 text-cyan-400">
+                            <!-- Vector Bezier Node SVG -->
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                            </svg>
+                        </div>
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-lg font-bold font-display text-white">Vector Tracer</h3>
+                            <span class="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-zinc-800 text-zinc-300">Algorithmic</span>
+                        </div>
+                        <p class="text-sm text-zinc-400 leading-relaxed">
+                            Convert pixelated PNGs and JPGs into infinitely scalable, clean SVG vectors using localized polygon-tracing presets without subscription fees.
+                        </p>
                     </div>
-                    <h3 class="text-lg font-semibold text-white mb-2">Password Generator</h3>
-                    <p class="text-sm text-zinc-400 leading-relaxed">Generate cryptographically secure passwords utilizing hardware-entropy hardware pools to guarantee unpredictable keys.</p>
                 </div>
 
-                <!-- Card 6 -->
-                <div class="bg-zinc-900/50 border border-zinc-800 p-8 rounded-xl hover:bg-zinc-900 transition-none">
-                    <div class="w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center mb-6">
-                        <svg class="w-6 h-6 text-zinc-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                <!-- Tool 6: QR Studio -->
+                <div class="glass-card p-7 rounded-2xl transition-all duration-200 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-5 text-emerald-400">
+                            <!-- Proper QR Code Matrix SVG -->
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+                            </svg>
+                        </div>
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-lg font-bold font-display text-white">QR Studio</h3>
+                            <span class="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-zinc-800 text-zinc-300">SVG Export</span>
+                        </div>
+                        <p class="text-sm text-zinc-400 leading-relaxed">
+                            Generate production-ready QR codes with custom foregrounds, embedded center logos, error correction, and background excavation.
+                        </p>
                     </div>
-                    <h3 class="text-lg font-semibold text-white mb-2">QR Studio</h3>
-                    <p class="text-sm text-zinc-400 leading-relaxed">Generate custom QR codes for links, text, and contacts with configurable error correction and native SVG vector exporting.</p>
                 </div>
 
-                <!-- Card 7 -->
-                <div class="bg-zinc-900/50 border border-zinc-800 p-8 rounded-xl hover:bg-zinc-900 transition-none">
-                    <div class="w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center mb-6">
-                        <svg class="w-6 h-6 text-zinc-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                <!-- Tool 7: Password Generator -->
+                <div class="glass-card p-7 rounded-2xl transition-all duration-200 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-5 text-indigo-400">
+                            <!-- Key / Cryptographic Shield SVG -->
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                            </svg>
+                        </div>
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-lg font-bold font-display text-white">Password Generator</h3>
+                            <span class="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-zinc-800 text-zinc-300">Crypto API</span>
+                        </div>
+                        <p class="text-sm text-zinc-400 leading-relaxed">
+                            Generate cryptographically robust passwords using OS hardware entropy pools (<code class="text-zinc-300 font-mono text-xs">crypto.getRandomValues</code>) with instant zxcvbn strength scoring.
+                        </p>
                     </div>
-                    <h3 class="text-lg font-semibold text-white mb-2">Vector Tracer</h3>
-                    <p class="text-sm text-zinc-400 leading-relaxed">Convert raster images (PNG/JPG) to perfectly layered scalable SVG vectors using advanced local polygon-tracing algorithms.</p>
                 </div>
 
-                <!-- Card 8 -->
-                <div class="bg-zinc-900/50 border border-zinc-800 p-8 rounded-xl hover:bg-zinc-900 transition-none">
-                    <div class="w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center mb-6">
-                        <svg class="w-6 h-6 text-zinc-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                <!-- Tool 8: Smart Task Manager -->
+                <div class="glass-card p-7 rounded-2xl transition-all duration-200 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center mb-5 text-teal-400">
+                            <!-- Task Checklist Sparkle SVG -->
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                            </svg>
+                        </div>
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-lg font-bold font-display text-white">Smart Task Manager</h3>
+                            <span class="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-zinc-800 text-zinc-300">Local Cache</span>
+                        </div>
+                        <p class="text-sm text-zinc-400 leading-relaxed">
+                            A focused to-do companion that detects urgency and deadline priorities straight from natural language without cloud syncing.
+                        </p>
                     </div>
-                    <h3 class="text-lg font-semibold text-white mb-2">Smart Task Manager</h3>
-                    <p class="text-sm text-zinc-400 leading-relaxed">Manage daily workflows with NLP-based sorting. The internal algorithm automatically calculates urgency from your text.</p>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Privacy & Security Manifesto -->
+        <div id="privacy" class="max-w-4xl mx-auto px-6 py-20 border-t border-zinc-800/60">
+            <div class="p-8 sm:p-12 rounded-3xl bg-gradient-to-b from-zinc-900/80 to-zinc-950 border border-zinc-800 relative overflow-hidden">
+                <div class="flex items-center gap-3 text-emerald-400 font-mono text-xs font-semibold mb-4 uppercase tracking-widest">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    0-Telemetry Guarantee
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-bold font-display text-white mb-4">Your files never leave your computer. Period.</h2>
+                <p class="text-zinc-400 leading-relaxed text-sm sm:text-base mb-6">
+                    Most "free online converters" upload your sensitive PDFs, invoices, and family videos to unverified cloud servers to monetize your data. 
+                    Jontro bundles the real binaries and neural models directly inside the application bundle. All computations occur in local RAM with zero network pings.
+                </p>
+                <div class="flex items-center gap-4 text-xs font-mono text-zinc-500">
+                    <span>&bull; No Sentry/Loggers</span>
+                    <span>&bull; No Tracking Cookies</span>
+                    <span>&bull; 100% Offline Capable</span>
                 </div>
             </div>
         </div>
 
-        <!-- Free & Open Source -->
-        <div class="max-w-4xl mx-auto px-6 py-24 border-t border-zinc-800/50 text-center">
-            <h2 class="text-3xl font-bold text-white mb-4">Free for Everyone. No Catch.</h2>
-            <p class="text-zinc-400 leading-relaxed max-w-2xl mx-auto">
-                Every tool in Jontro is unlocked for every user &mdash; no license keys, no trial limits, no
-                feature paywalls. The full source code is public on GitHub under the MIT license, so anyone
-                can use it, learn from it, modify it, or build on top of it.
-            </p>
-        </div>
-
-        <!-- Donation Section -->
-        <div id="donate" class="max-w-5xl mx-auto px-6 py-24 border-t border-zinc-800/50">
-            <div class="text-center mb-14">
-                <h2 class="text-3xl font-bold text-white mb-4">Support This Project</h2>
-                <p class="text-zinc-400 max-w-xl mx-auto">
-                    Jontro will always be free. If it saves you time and you'd like to help keep it maintained,
-                    a donation is welcome &mdash; entirely optional, and never required to use any feature.
+        <!-- Donation / Support Section -->
+        <div id="donate" class="max-w-4xl mx-auto px-6 py-20 border-t border-zinc-800/60">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold font-display text-white mb-3">Support Independent Development</h2>
+                <p class="text-zinc-400 text-sm max-w-lg mx-auto">
+                    Jontro is maintained as a passion project for the open-source community. If it saves you time or replaces a paid subscription, a cup of coffee is greatly appreciated!
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                 <!-- bKash -->
-                <div class="bg-zinc-900/50 border border-zinc-800 p-6 rounded-xl flex flex-col items-center text-center hover:border-zinc-700 transition-none">
-                    <div class="w-12 h-12 rounded-lg flex items-center justify-center mb-4" style="background:rgba(226,19,110,0.12); border:1px solid rgba(226,19,110,0.3);">
+                <div class="glass-card p-6 rounded-2xl flex flex-col items-center text-center">
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style="background:rgba(226,19,110,0.12); border:1px solid rgba(226,19,110,0.3);">
                         <span class="text-xl font-bold" style="color:#e2136e;" aria-hidden="true">&#2547;</span>
                     </div>
-                    <h3 class="text-white font-semibold mb-1">bKash</h3>
-                    <p class="text-xs text-zinc-500 mb-4">Send Money</p>
-                    <button type="button" class="copy-btn w-full font-mono text-base text-zinc-100 bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 hover:border-zinc-600 transition-none" data-copy="01732109847" aria-label="Copy bKash number">
-                        01732-109847
+                    <h3 class="text-white font-display font-semibold mb-0.5">bKash</h3>
+                    <p class="text-xs text-zinc-500 mb-4">Personal &middot; Send Money</p>
+                    <button type="button" class="copy-btn w-full font-mono text-sm text-zinc-100 bg-zinc-900/90 border border-zinc-700/80 rounded-lg px-3 py-2 hover:border-zinc-500 active:scale-95 transition-all duration-150 flex items-center justify-center gap-2" data-copy="01732109847">
+                        <span>01732-109847</span>
+                        <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                     </button>
                 </div>
 
                 <!-- Nagad -->
-                <div class="bg-zinc-900/50 border border-zinc-800 p-6 rounded-xl flex flex-col items-center text-center hover:border-zinc-700 transition-none">
-                    <div class="w-12 h-12 rounded-lg flex items-center justify-center mb-4" style="background:rgba(247,147,30,0.12); border:1px solid rgba(247,147,30,0.3);">
+                <div class="glass-card p-6 rounded-2xl flex flex-col items-center text-center">
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style="background:rgba(247,147,30,0.12); border:1px solid rgba(247,147,30,0.3);">
                         <span class="text-xl font-bold" style="color:#f7931e;" aria-hidden="true">&#2547;</span>
                     </div>
-                    <h3 class="text-white font-semibold mb-1">Nagad</h3>
-                    <p class="text-xs text-zinc-500 mb-4">Send Money</p>
-                    <button type="button" class="copy-btn w-full font-mono text-base text-zinc-100 bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 hover:border-zinc-600 transition-none" data-copy="01732109847" aria-label="Copy Nagad number">
-                        01732-109847
+                    <h3 class="text-white font-display font-semibold mb-0.5">Nagad</h3>
+                    <p class="text-xs text-zinc-500 mb-4">Personal &middot; Send Money</p>
+                    <button type="button" class="copy-btn w-full font-mono text-sm text-zinc-100 bg-zinc-900/90 border border-zinc-700/80 rounded-lg px-3 py-2 hover:border-zinc-500 active:scale-95 transition-all duration-150 flex items-center justify-center gap-2" data-copy="01732109847">
+                        <span>01732-109847</span>
+                        <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                     </button>
                 </div>
 
                 <!-- Bank Transfer -->
-                <div class="bg-zinc-900/50 border border-zinc-800 p-6 rounded-xl flex flex-col items-center text-center hover:border-zinc-700 transition-none">
-                    <div class="w-12 h-12 rounded-lg flex items-center justify-center mb-4" style="background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3);">
-                        <svg class="w-6 h-6" style="color:#10b981;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 21h18M4 18h16M6 18v-7m4 7v-7m4 7v-7m4 7v-7M3 10l9-6 9 6M4 10h16"></path></svg>
+                <div class="glass-card p-6 rounded-2xl flex flex-col items-center text-center">
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style="background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3);">
+                        <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 21h18M4 18h16M6 18v-7m4 7v-7m4 7v-7m4 7v-7M3 10l9-6 9 6M4 10h16"/></svg>
                     </div>
-                    <h3 class="text-white font-semibold mb-1">Bank Transfer</h3>
-                    <p class="text-xs text-zinc-500 mb-4">Islamic Bank Bangladesh PLC</p>
-                    <dl class="text-xs text-zinc-400 text-left w-full space-y-1.5 mb-3">
-                        <div class="flex justify-between gap-2"><dt class="text-zinc-500">Branch</dt><dd class="text-zinc-200">Bogura</dd></div>
-                        <div class="flex justify-between gap-2"><dt class="text-zinc-500">Account Name</dt><dd class="text-zinc-200 text-right">Zihad Hasan</dd></div>
-                    </dl>
-                    <button type="button" class="copy-btn w-full font-mono text-sm text-zinc-100 bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 hover:border-zinc-600 transition-none" data-copy="20501120207611108" aria-label="Copy bank account number">
-                        20501120207611108
+                    <h3 class="text-white font-display font-semibold mb-0.5">Bank Transfer</h3>
+                    <p class="text-xs text-zinc-500 mb-3">Islami Bank Bangladesh PLC</p>
+                    <button type="button" class="copy-btn w-full font-mono text-xs text-zinc-100 bg-zinc-900/90 border border-zinc-700/80 rounded-lg px-2.5 py-2 hover:border-zinc-500 active:scale-95 transition-all duration-150 flex items-center justify-center gap-1.5" data-copy="20501120207611108">
+                        <span>20501120207611108</span>
+                        <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                     </button>
                 </div>
             </div>
-            <p class="text-center text-xs text-zinc-600 mt-10">Click any number above to copy it. Thank you for considering it &mdash; it genuinely helps.</p>
         </div>
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-zinc-800/50 py-12 text-center text-sm text-zinc-500">
-        <p>Free and open source, built by Zihad Hasan. Licensed under the <a href="https://github.com/zihaaaad/Jontro/blob/master/LICENSE" target="_blank" class="text-zinc-300 hover:text-white underline underline-offset-2">MIT License</a>.</p>
-        <p class="mt-2">Copyright &copy; 2026 Zihad Hasan</p>
+    <footer class="border-t border-zinc-800/60 py-10 text-center text-xs text-zinc-500">
+        <div class="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span>Crafted by <a href="https://github.com/zihaaaad" target="_blank" class="text-zinc-300 hover:text-white font-medium">Zihad Hasan</a></span>
+            </div>
+            <div class="flex items-center gap-6">
+                <a href="https://github.com/zihaaaad/Jontro/blob/master/LICENSE" target="_blank" class="text-zinc-400 hover:text-zinc-200">MIT License</a>
+                <a href="https://github.com/zihaaaad/Jontro/releases" target="_blank" class="text-zinc-400 hover:text-zinc-200">Releases</a>
+                <a href="https://github.com/zihaaaad/Jontro/issues" target="_blank" class="text-zinc-400 hover:text-zinc-200">Issues &amp; Feedback</a>
+            </div>
+        </div>
     </footer>
 
     <script>
@@ -266,11 +419,8 @@
                 const release = await response.json();
 
                 const versionText = document.getElementById("version-text");
-                if (versionText) versionText.textContent = `${release.tag_name} is now available`;
+                if (versionText) versionText.textContent = `${release.tag_name} Available`;
 
-                // Read the real asset URL from the release instead of guessing a
-                // filename pattern - electron-builder's naming (hyphens, dots,
-                // spaces) has changed before and a guessed name silently 404s.
                 const exeAssets = release.assets.filter(a => a.name.toLowerCase().endsWith(".exe"));
                 const exeAsset = exeAssets.find(a => /setup/i.test(a.name)) || exeAssets[0];
                 if (exeAsset) {
@@ -278,28 +428,23 @@
                 }
             } catch (error) {
                 console.error("Error fetching latest release:", error);
-                // Fallback: send the visitor to the Releases page itself rather
-                // than guessing a specific asset filename that may not exist.
-                document.getElementById("version-text").textContent = "See latest release";
+                document.getElementById("version-text").textContent = "v1.0.24 Available";
                 document.querySelectorAll(".download-link").forEach(el => el.href = "https://github.com/zihaaaad/Jontro/releases/latest");
             }
         });
 
-        // Donation numbers: click-to-copy. No tracking, no network call -
-        // purely navigator.clipboard with a brief "Copied!" confirmation.
+        // Click to Copy with smooth feedback
         document.querySelectorAll(".copy-btn").forEach((btn) => {
-            const original = btn.textContent.trim();
+            const originalHTML = btn.innerHTML;
             btn.addEventListener("click", async () => {
                 const text = btn.dataset.copy;
                 try {
                     await navigator.clipboard.writeText(text);
-                    btn.textContent = "Copied!";
+                    btn.innerHTML = `<span class="text-emerald-400 font-semibold">Copied!</span>`;
                 } catch (err) {
-                    // Clipboard API unavailable (e.g. insecure context) - the
-                    // number is still plainly visible and selectable by hand.
-                    btn.textContent = "Select & copy manually";
+                    btn.innerHTML = `<span>Copied manually</span>`;
                 }
-                setTimeout(() => { btn.textContent = original; }, 1500);
+                setTimeout(() => { btn.innerHTML = originalHTML; }, 1600);
             });
         });
     </script>
