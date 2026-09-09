@@ -138,25 +138,57 @@
                     </span>
                 </div>
 
-                <!-- Action Download Buttons -->
-                <div class="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
-                    <!-- Windows Download (Official Windows Logo SVG) -->
-                    <a id="download-installer" href="https://github.com/zihaaaad/Jontro/releases/latest" class="download-link w-full sm:w-auto px-7 py-3.5 bg-white hover:bg-zinc-100 text-zinc-950 rounded-xl font-semibold shadow-lg shadow-white/10 hover:shadow-white/20 transition-all duration-200 flex items-center justify-center gap-2.5 group">
-                        <svg class="w-4 h-4 fill-current text-blue-600" viewBox="0 0 88 88">
-                            <path d="M0 12.402l35.687-4.86.016 34.423-35.67.203zm35.67 33.529l.028 34.453L.028 75.48.016 45.728zm4.326-39.027L87.914 0v41.527l-47.918.376zm47.918 43.934v41.562l-47.918-6.745V46.671z"/>
-                        </svg>
-                        <span>Download for Windows</span>
+                <!-- Action Download Cards -->
+                <div class="max-w-2xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                    <!-- Windows Download Card -->
+                    <a id="download-installer" href="https://github.com/zihaaaad/Jontro/releases/latest" class="download-win-link group relative p-5 rounded-2xl bg-gradient-to-b from-zinc-900/90 to-zinc-950 border border-zinc-700/80 hover:border-blue-500/70 shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1 transition-all duration-200 flex items-center gap-4 text-left">
+                        <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
+                            <!-- Windows 11 Modern Logo SVG -->
+                            <svg class="w-6 h-6 fill-current text-blue-400" viewBox="0 0 24 24">
+                                <path d="M3 3h8.25v8.25H3V3zm9.75 0H21v8.25h-8.25V3zM3 12.75h8.25V21H3v-8.25zm9.75 0H21V21h-8.25v-8.25z"/>
+                            </svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-1.5">
+                                <span class="font-display font-bold text-white text-base group-hover:text-blue-300 transition-colors">Download Windows</span>
+                            </div>
+                            <p class="text-xs text-zinc-400 mt-0.5 truncate">Windows 10/11 &bull; 64-bit (.exe)</p>
+                        </div>
+                        <div class="w-8 h-8 rounded-lg bg-zinc-800/80 group-hover:bg-blue-500 group-hover:text-white text-zinc-400 flex items-center justify-center shrink-0 transition-colors duration-200">
+                            <svg class="w-4 h-4 group-hover:translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                        </div>
                     </a>
 
-                    <!-- macOS Download (Official Apple Logo SVG) -->
-                    <a href="https://github.com/zihaaaad/Jontro/releases/latest" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto px-7 py-3.5 bg-zinc-900/90 border border-zinc-700/80 hover:border-zinc-500 hover:bg-zinc-800/90 text-zinc-100 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2.5">
-                        <svg class="w-4 h-4 fill-current text-zinc-200" viewBox="0 0 170 170">
-                            <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.7-3.08-7.58-7.85-11.65-14.3-5.24-8.31-9.44-17.88-12.6-28.71-3.16-10.83-4.74-21.36-4.74-31.59 0-14.28 3.52-26.06 10.56-35.34 7.04-9.28 15.99-13.98 26.85-14.1 4.58 0 9.87 1.25 15.86 3.75 5.99 2.5 9.77 3.81 11.34 3.93 1.34-.12 5.3-1.48 11.88-4.08 6.58-2.6 12.08-3.75 16.51-3.45 12.28.62 22.38 5.21 30.3 13.78-10.74 6.5-16.01 15.35-15.81 26.54.2 8.7 3.44 15.99 9.72 21.87 6.28 5.88 13.9 9.17 22.86 9.87-2.3 6.96-5.18 14.1-8.64 21.43zM119.22 31.84c0-7.39 2.68-14.28 8.04-20.67 5.36-6.39 12-10.51 19.92-12.37.94 7.72-1.6 14.88-7.62 21.48-6.02 6.6-13 10.5-20.34 11.56z"/>
-                        </svg>
-                        <span>macOS (Intel &amp; M-Series)</span>
+                    <!-- macOS Download Card -->
+                    <a id="download-mac" href="https://github.com/zihaaaad/Jontro/releases/latest" target="_blank" rel="noopener noreferrer" class="download-mac-link group relative p-5 rounded-2xl bg-gradient-to-b from-zinc-900/90 to-zinc-950 border border-zinc-700/80 hover:border-indigo-500/70 shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 transition-all duration-200 flex items-center gap-4 text-left">
+                        <div class="w-12 h-12 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
+                            <!-- Clean 24x24 Apple Logo SVG -->
+                            <svg class="w-6 h-6 fill-current text-zinc-100" viewBox="0 0 24 24">
+                                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.92-2.85-.9.04-1.99.6-2.64 1.36-.58.67-1.09 1.74-.96 2.77 1 .08 2.04-.51 2.68-1.28z"/>
+                            </svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-1.5">
+                                <span class="font-display font-bold text-white text-base group-hover:text-indigo-300 transition-colors">Download macOS</span>
+                            </div>
+                            <p class="text-xs text-zinc-400 mt-0.5 truncate">Apple Silicon &amp; Intel (.dmg)</p>
+                        </div>
+                        <div class="w-8 h-8 rounded-lg bg-zinc-800/80 group-hover:bg-indigo-500 group-hover:text-white text-zinc-400 flex items-center justify-center shrink-0 transition-colors duration-200">
+                            <svg class="w-4 h-4 group-hover:translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                        </div>
                     </a>
                 </div>
-                <p class="text-xs text-zinc-500 mt-6 tracking-wide">Runs natively on Windows 10/11 (x64) and macOS 11+ (Universal binary)</p>
+
+                <!-- Secondary Link -->
+                <div class="flex items-center justify-center gap-4 text-xs text-zinc-500">
+                    <span>Portable &bull; No installation required</span>
+                    <span>&bull;</span>
+                    <a href="https://github.com/zihaaaad/Jontro/releases" target="_blank" class="text-zinc-400 hover:text-zinc-200 underline underline-offset-2">View all release assets on GitHub &rarr;</a>
+                </div>
             </div>
         </div>
 
@@ -424,12 +456,18 @@
                 const exeAssets = release.assets.filter(a => a.name.toLowerCase().endsWith(".exe"));
                 const exeAsset = exeAssets.find(a => /setup/i.test(a.name)) || exeAssets[0];
                 if (exeAsset) {
-                    document.querySelectorAll(".download-link").forEach(el => el.href = exeAsset.browser_download_url);
+                    document.querySelectorAll(".download-win-link").forEach(el => el.href = exeAsset.browser_download_url);
+                }
+
+                const dmgAssets = release.assets.filter(a => a.name.toLowerCase().endsWith(".dmg"));
+                const dmgAsset = dmgAssets[0];
+                if (dmgAsset) {
+                    document.querySelectorAll(".download-mac-link").forEach(el => el.href = dmgAsset.browser_download_url);
                 }
             } catch (error) {
                 console.error("Error fetching latest release:", error);
                 document.getElementById("version-text").textContent = "v1.0.24 Available";
-                document.querySelectorAll(".download-link").forEach(el => el.href = "https://github.com/zihaaaad/Jontro/releases/latest");
+                document.querySelectorAll(".download-win-link, .download-mac-link").forEach(el => el.href = "https://github.com/zihaaaad/Jontro/releases/latest");
             }
         });
 
